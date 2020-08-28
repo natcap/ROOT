@@ -1,0 +1,6 @@
+.DS_Store
+deprecated_code/
+**/__pycache__/
+sample_*/
+docs/_build/
+*.pyc

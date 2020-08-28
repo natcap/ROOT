@@ -1,0 +1,4 @@
+pyinstaller==3.5
+setuptools_scm
+cython
+scs<2  # attempting to solve a build error: https://ci.appveyor.com/project/phargogh/root-source/builds/30653182
