@@ -4,3 +4,4 @@ deprecated_code/
 sample_*/
 docs/_build/
 *.pyc
+.vscode
