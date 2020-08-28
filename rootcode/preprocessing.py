@@ -9,7 +9,6 @@ import shutil
 import math
 import tempfile
 import collections
-import exceptions
 import glob
 import json
 import shapely.wkb
@@ -22,10 +21,10 @@ import numpy as np
 import pandas as pd
 
 import pygeoprocessing
-import arith_parser as ap
+from . import arith_parser as ap
 
 
-class RootPreprocessingError(exceptions.Exception):
+class RootPreprocessingError(Exception):
     pass
 
 
@@ -106,7 +105,7 @@ def execute(args):
         'baseline_ip_table': os.path.join(
             args['csv_output_folder'], args['baseline_file']),
         }
-    for path in f_reg.itervalues():
+    for path in f_reg.values():
         dir_path = os.path.dirname(path)
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
@@ -175,7 +174,7 @@ def execute(args):
     print('STEP: Create baseline table')
     baseline_value_lookup = marginal_value_lookup.copy()
     # zero out all the marginal values since that's equivalent of baseline
-    for marginal_value_tuple in baseline_value_lookup.itervalues():
+    for marginal_value_tuple in baseline_value_lookup.values():
         for mv_id in marginal_value_tuple[1]:
             marginal_value_tuple[1][mv_id] = [0.0, 0, 0.0]
 
@@ -238,7 +237,6 @@ def _serviceshed_coverage(
         lambda: collections.defaultdict(
             lambda: [0.0, collections.defaultdict(float)]))
 
-    serviceshed_ids = {}
 
     for serviceshed_id, serviceshed_path in zip(
             serviceshed_id_list, serviceshed_path_list):
@@ -252,7 +250,7 @@ def _serviceshed_coverage(
                     serviceshed_geometry.ExportToWkb())
                 prep_serviceshed_polygon = shapely.prepared.prep(
                     serviceshed_polygon)
-                for sdu_id, sdu_poly in sdu_lookup.iteritems():
+                for sdu_id, sdu_poly in sdu_lookup.items():
                     if not prep_serviceshed_polygon.intersects(sdu_poly):
                         # define some placeholders just in case so when we
                         # create a flat table later, everything is defined
@@ -342,13 +340,13 @@ def _build_ip_table(
         # This gets the "first" value in the dict, then the keys of that dict
         # also makes sense to sort them so it's easy to navigate the CSV.
         marginal_value_ids = sorted(
-            marginal_value_lookup.itervalues().next()[1].keys())
+            marginal_value_lookup.values().next()[1].keys())
         n_mv_ids = len(marginal_value_ids)
         target_ip_file.write((",%s" * n_mv_ids) % tuple(marginal_value_ids))
         # target_ip_file.write(
         #     (",%s_perHA" * n_mv_ids) % tuple(marginal_value_ids))
         if sdu_serviceshed_coverage is not None:
-            first_serviceshed_lookup = sdu_serviceshed_coverage.itervalues().next()
+            first_serviceshed_lookup = sdu_serviceshed_coverage.values().next()
         else:
             first_serviceshed_lookup = {}
         serviceshed_ids = sorted(first_serviceshed_lookup.keys())
@@ -414,7 +412,7 @@ def _add_combined_factors(data_table_path, combined_factors_dict):
     """
     df = pd.read_csv(data_table_path)
 
-    for col_name, factors in combined_factors_dict.iteritems():
+    for col_name, factors in combined_factors_dict.items():
         df[col_name] = ap.apply(df, factors)
 
     df.to_csv(data_table_path, index=False)
@@ -653,7 +651,7 @@ def _remove_nonoverlapping_sdus(vector_path, mask_raster_path, key_id_field):
         str(os.path.splitext(vector_basename)[0]),
         spatial_ref, ogr.wkbPolygon)
     layer_defn = layer.GetLayerDefn()
-    for index in xrange(layer_defn.GetFieldCount()):
+    for index in range(layer_defn.GetFieldCount()):
         field_defn = layer_defn.GetFieldDefn(index)
         field_defn.SetWidth(24)
         target_layer.CreateField(field_defn)
@@ -780,8 +778,8 @@ def _grid_vector_across_raster(
     else:
         raise ValueError('Unknown polygon type: %s' % grid_type)
 
-    for row_index in xrange(n_rows):
-        for col_index in xrange(n_cols):
+    for row_index in range(n_rows):
+        for col_index in range(n_cols):
             polygon_points = _generate_polygon(col_index, row_index)
             ring = ogr.Geometry(ogr.wkbLinearRing)
             for xoff, yoff in polygon_points:

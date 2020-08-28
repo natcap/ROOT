@@ -1,0 +1,344 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>4. Sample data walkthrough &mdash; ROOT 1.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5. Examples" href="examples.html" />
+    <link rel="prev" title="3. Documentation for ROOT interface inputs" href="interface_guide.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> ROOT
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflow.html">2. Workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="interface_guide.html">3. Interface guide</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">4. Sample data walkthrough</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#context">4.1. Context</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#file-overview">4.2. File overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configuring-preprocessing-tables">4.3. Configuring Preprocessing tables</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#activity-mask-table">4.3.1. Activity mask table</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#impact-potential-raster-table">4.3.2. Impact potential raster table</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#spatial-weighting-maps-table">4.3.3. Spatial weighting maps table</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#composite-factors-table">4.3.4. Composite factors table</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#setting-up-the-preprocessing-ui-inputs">4.4. Setting up the preprocessing UI inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#preprocessing-outputs">4.5. Preprocessing outputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#optimization-examples">4.6. Optimization examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">5. Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="root_source.html">6. ROOT UI code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">7. Release Notes</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ROOT</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li><span class="section-number">4. </span>Sample data walkthrough</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/rst/sample_data_walkthrough.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="sample-data-walkthrough">
+<h1><span class="section-number">4. </span>Sample data walkthrough<a class="headerlink" href="#sample-data-walkthrough" title="Permalink to this headline">¶</a></h1>
+<p>Download sample data here:</p>
+<div class="section" id="context">
+<h2><span class="section-number">4.1. </span>Context<a class="headerlink" href="#context" title="Permalink to this headline">¶</a></h2>
+<p>The sample data comes from an analysis of different restoration or agricultural management changes in a watershed in Colombia. The goal is to determine which areas to target with each activity in order to achieve desired benefits to carbon sequestration, nitrogen and sediment load reduction, and improvements to water supply. Note that the models were not calibrated, so this example should be considered illustrative, not prescriptive.</p>
+<p>The activities in the example are:</p>
+<ul class="simple">
+<li><p><strong>Ag BMPS</strong>: This activity represents a shift from a conventional-style agriculture to one employing improved nutrient management techniques.</p></li>
+<li><p><strong>Forest restoration</strong>: This activity captures a significant change in land use from crop or pasture to a restored forest.</p></li>
+<li><p><strong>Riparian restoration</strong>: This activity is similar to forest restoration, but is specific to a buffer around waterways to target critical areas for water quality.</p></li>
+</ul>
+<p>And the biophysical factors, measured as change from baseline to alternative activity, are:</p>
+<ul class="simple">
+<li><p><strong>Carbon</strong>: change in carbon storage (soil and biomass)</p></li>
+<li><p><strong>NDR</strong>: change in nitrogen loading</p></li>
+<li><p><strong>SDR</strong>: change in sediment loading</p></li>
+<li><p><strong>SWY</strong>: change in seasonal water yield</p></li>
+</ul>
+</div>
+<div class="section" id="file-overview">
+<h2><span class="section-number">4.2. </span>File overview<a class="headerlink" href="#file-overview" title="Permalink to this headline">¶</a></h2>
+<p>The input data comes in four folders:</p>
+<ul class="simple">
+<li><p><strong>activity_mask_rasters</strong>: These rasters identify which pixels are valid locations for each of the activities.</p></li>
+<li><p><strong>configuration_tables</strong>: This folder contains the various tables that will go into the fields in the ROOT interface. They are numbered in the order that they appear in the interface. As you work through the example, you will need to edit these tables to adjust file paths and set various options. Feel free to make copies of the files before editing them - the names of the files are not important to ROOT, so you can name them whatever is helpful to you.</p></li>
+<li><p><strong>impact_potential_rasters</strong>: These rasters contain the pixel-level values of each activity for each of the biophysical factors. They are named mv_*factor*_*activity*.tif, where mv is short for “marginal value”, and factor and activity are replaced with the corresponding names. So, for example, “mv_ndr_forest_restoration.tif” gives the effect of forest restoration on nitrogen loading.</p></li>
+<li><p><strong>spatial_weighting_maps</strong>: This map indicates some population characteristics that could be used for targeting different activities or objectives.</p></li>
+</ul>
+</div>
+<div class="section" id="configuring-preprocessing-tables">
+<h2><span class="section-number">4.3. </span>Configuring Preprocessing tables<a class="headerlink" href="#configuring-preprocessing-tables" title="Permalink to this headline">¶</a></h2>
+<p>Since the data is provided ready to go, the first step will be to set up the four tables that configure the preprocessing step of the analysis. These are:</p>
+<ul class="simple">
+<li><p>Activity mask table</p></li>
+<li><p>Impact potential raster table</p></li>
+<li><p>Spatial weighting map table</p></li>
+<li><p>Composite factor table</p></li>
+</ul>
+<p>Each of them will need to be configured appropriately to run the analysis. We will go through each one in order. Templates are provided in the <cite>configuration_tables</cite> folder, with numeric prefixes to line them up in the order we will handle them (the same as their order in the UI).</p>
+<div class="section" id="activity-mask-table">
+<h3><span class="section-number">4.3.1. </span>Activity mask table<a class="headerlink" href="#activity-mask-table" title="Permalink to this headline">¶</a></h3>
+<p>This table tells ROOT which rasters to use to identify pixels that are potential sites for each activity. To get it ready to use:</p>
+<ol class="arabic simple">
+<li><p>Open 1_am_table.csv. Note it has two columns, ‘activity’, and ‘mask_path’. The ‘activity’ column is where you specify a name to use for each activity in the analysis. In the example data, it has been filled in already.</p></li>
+<li><p>For each activity, find the appropriate raster in <cite>activity_mask_rasters</cite>. Copy the complete file path (see the tips in the interface guide for how to do this easily) and paste it in the corresponding space in the ‘mask_path’ column.</p></li>
+<li><p>Save and close the table. Say ‘yes’ to keeping the .csv format.</p></li>
+</ol>
+</div>
+<div class="section" id="impact-potential-raster-table">
+<h3><span class="section-number">4.3.2. </span>Impact potential raster table<a class="headerlink" href="#impact-potential-raster-table" title="Permalink to this headline">¶</a></h3>
+<p>This table tells ROOT which rasters provide spatial data on the impact of each practice for a given set of measures.</p>
+<ol class="arabic simple">
+<li><p>Open 2_ipm_table.csv. Note it has a column called ‘name’, and then one column for each of the activities named in the activity mask table. In the example data, these activity names have been filled in already, but in other cases, you will have to make sure to transfer the names correctly between tables (paste special -&gt; transpose can help avoid typos). In the ‘name’ column, the sample table includes names of the different metrics we will provide data for.</p></li>
+<li><p>For each activity and metric, find the raster in the <cite>impact_potential_rasters</cite> folder. The files are named for both the factor and the activity (see above). Copy the file paths into the correct cells in the table.</p></li>
+<li><p>Save and close the table.</p></li>
+</ol>
+</div>
+<div class="section" id="spatial-weighting-maps-table">
+<h3><span class="section-number">4.3.3. </span>Spatial weighting maps table<a class="headerlink" href="#spatial-weighting-maps-table" title="Permalink to this headline">¶</a></h3>
+<p>This table tells ROOT about shapefiles that provide additional weighting information. It lists the files and which fields from the attribute tables to pull out.</p>
+<ol class="arabic simple">
+<li><p>Open 3_swm_table.csv. It has 3 columns, one to assign a name to each shapefile, one for the filepath, and one to identify the fields to keep.</p></li>
+<li><p>For this example, we only have one shapefile, so copy the filepath of the <cite>pop_chars.shp</cite> file (found in <cite>spatial_weighting_maps</cite>) into the file_path field in the csv.</p></li>
+<li><p>Type the following into the weight_col field: <code class="docutils literal notranslate"><span class="pre">prop_poor</span> <span class="pre">prop_dep_o</span></code>. Note it is important to separate the names of the fields using a space, not a comma.</p></li>
+<li><p>Save and close the table.</p></li>
+</ol>
+</div>
+<div class="section" id="composite-factors-table">
+<h3><span class="section-number">4.3.4. </span>Composite factors table<a class="headerlink" href="#composite-factors-table" title="Permalink to this headline">¶</a></h3>
+<p>This table tells ROOT how to combine the different factors from the raster and shapefile data to create composite values. This example will use simple combinations, but more complicated mathematical formulas can be used.</p>
+<ol class="arabic simple">
+<li><p>Open 4_cf_table.csv. The first column, ‘name’, allows you to set the name for the composite factor, and the second, ‘factors’, lets you write the formula ROOT will use to calculate it.</p></li>
+<li><p>In this example, we have provided an example for a poverty-weighted nitrogen metric. Fill in the empty box replicating the ndr equation, but replacing ndr with sdr.</p></li>
+<li><p>Save and close the table.</p></li>
+</ol>
+</div>
+</div>
+<div class="section" id="setting-up-the-preprocessing-ui-inputs">
+<h2><span class="section-number">4.4. </span>Setting up the preprocessing UI inputs<a class="headerlink" href="#setting-up-the-preprocessing-ui-inputs" title="Permalink to this headline">¶</a></h2>
+<p>This section will go through running ROOT’s preprocessing step.</p>
+<ol class="arabic">
+<li><p>Open ROOT. To do this, double-click on the ‘ROOT.exe’ file.</p></li>
+<li><p>Pick a workspace. This is where the results of the analysis will be saved. Click on the folder icon to navigate to the desired folder.</p></li>
+<li><p>Check the “Do Preprocessing” box, and make sure the “Do Optimization” box is unchecked.</p></li>
+<li><p>For each of the first four fields in the “Preprocessing Arguments” section, click on the folder icon and navigate to the corresponding table in the <cite>configuration_tables</cite> folder.</p></li>
+<li><p>Enter <code class="docutils literal notranslate"><span class="pre">hexagon</span></code> for the spatial decision unit shape and <code class="docutils literal notranslate"><span class="pre">100.0</span></code> for the area in the next two fields.</p></li>
+<li><p>Click Run to perform the preprocessing</p>
+<blockquote>
+<div><div class="admonition error">
+<p class="admonition-title">Error</p>
+<p>If there are errors, it is likely that a filepath has been entered incorrectly or activity/factor names don’t match between files. Read the error messages and check the configuration tables to troubleshoot until the preprocessing runs.</p>
+</div>
+</div></blockquote>
+</li>
+</ol>
+</div>
+<div class="section" id="preprocessing-outputs">
+<h2><span class="section-number">4.5. </span>Preprocessing outputs<a class="headerlink" href="#preprocessing-outputs" title="Permalink to this headline">¶</a></h2>
+<p>This preprocessing will create two types of files in the workspace folder:</p>
+<ul class="simple">
+<li><p><strong>sdu_grid.shp</strong>: This is an automatically generated shapefile that outlines the spatial decision units (SDUs) for the problem. It is based on the SDU shape and area arguments to the UI, so in this case consists of 100 hectare hexagons.</p></li>
+<li><p><strong>activity tables in sdu_value_tables</strong>: These tables provide summaries of the spatial input data aggregated to the SDUs. The columns include information on the available area for each activity by SDU, summed values for each of the raster-based factors, average values for the shapefile-based weights, and results of applying the composite factor expressions. These tables are the data that will be used by the optimization step to assign activities to SDUs.</p></li>
+</ul>
+</div>
+<div class="section" id="optimization-examples">
+<h2><span class="section-number">4.6. </span>Optimization examples<a class="headerlink" href="#optimization-examples" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="examples.html" class="btn btn-neutral float-right" title="5. Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="interface_guide.html" class="btn btn-neutral float-left" title="3. Documentation for ROOT interface inputs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2018, Peter Hawthorne
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -2,6 +2,6 @@
 deprecated_code/
 **/__pycache__/
 sample_*/
-docs/_build/
+docsrc/_build/
 *.pyc
 .vscode

@@ -4,20 +4,21 @@ import json
 import copy
 import pprint
 
-import optim_core as opco
+from . import optim_core as opco
 
 
 def execute(config_file_or_dict):
     """
     Given a config json file or dict, completes the entire optimization processing flow.
-    config_file_or_dict must contain:
-        - data_folder: folder containing the value tables
-        - sdu_id_col: the column in the value tables that indexes each SDU
-        - baseline_file: management option to treat as choice 0
-        - optimization_folder: output folder
-        - analysis_type: one of the options provided by oooe
+    `config_file_or_dict` must contain:
 
-    config_file_or_dict must also contain values that describe the optimization
+    - data_folder: folder containing the value tables
+    - sdu_id_col: the column in the value tables that indexes each SDU
+    - baseline_file: management option to treat as choice 0
+    - optimization_folder: output folder
+    - analysis_type: one of the options provided by oooe
+
+    `config_file_or_dict` must also contain values that describe the optimization
     problem to be solved. These will depend on the analysis type.
 
     :param config_file_or_dict:
@@ -96,7 +97,7 @@ def get_data_cols(config):
     if 'weights' in config and isinstance(config['weights'], dict):
         # handles all cases with weights given directly
         objective_cols = list(config['weights'].keys())
-    elif 'weights' in config and (isinstance(config['weights'], str) or isinstance(config['weights'], unicode)):
+    elif 'weights' in config and isinstance(config['weights'], str): # or isinstance(config['weights'], unicode)):
         # handle the weight table option
         objective_cols = get_header_list(config['weights'])
     else:

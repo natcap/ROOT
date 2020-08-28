@@ -6,8 +6,8 @@ SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 SPHINXPROJ    = ROOT
 SOURCEDIR     = .
-BUILDDIR      = _build
-GITHUBPAGESDIR = /Users/phawthorne/Projects/phawthorne/phawthorne.github.io/
+BUILDDIR      = _build/html/
+GITHUBPAGESDIR = ../docs
 GHPNAME = root_docs
 
 # Put it first so that "make" without argument is like "make help".
@@ -15,9 +15,8 @@ help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
 github:
-	rm -r "$(GITHUBPAGESDIR)$(GHPNAME)"
-	cp -r "$(BUILDDIR)" "$(GITHUBPAGESDIR)"
-	mv "$(GITHUBPAGESDIR)$(BUILDDIR)" "$(GITHUBPAGESDIR)$(GHPNAME)"
+	rm -r "$(GITHUBPAGESDIR)"
+	cp -R "$(BUILDDIR)" "$(GITHUBPAGESDIR)"
 
 .PHONY: help github Makefile
 

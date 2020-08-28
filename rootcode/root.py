@@ -10,15 +10,15 @@ import json
 from math import sqrt
 
 import pandas as pd
-from osgeo import ogr
-from osgeo import gdal
+import ogr
+import gdal
 from natcap.invest.ui import model, inputs
 
 sys.path.extend([os.getcwd()])
 
-import preprocessing
-import postprocessing
-import solver.optimization_engine as isolve
+from . import preprocessing
+from . import postprocessing
+from . import optimization
 
 LOGGER = logging.getLogger('natcap.invest.root')
 
@@ -45,7 +45,7 @@ def execute(args):
 
     if args['do_optimization']:
         print('doing optimization')
-        isolve.execute(internal_args)
+        optimization.execute(internal_args)
         postprocessing.execute(internal_args)
     else:
         print('skipping optimization')
@@ -337,7 +337,6 @@ def validate_cft_table(rt_path, st_path, cft_path):
 
     invalid_factors = []
     for _, row in cft.iterrows():
-        name = row['name']
         factors = row['factors'].split(' ')
         for f in factors:
             if f not in all_factors:
@@ -422,7 +421,7 @@ def validate(args, limit_to=None):
 
     if (limit_to in ['targets_table_path', None] and
             'targets_table_path' in args):
-        dataframe = pandas.read_csv(args['targets_table_path'])
+        dataframe = pd.read_csv(args['targets_table_path'])
         required_colnames = set(['name', 'cons_type', 'value'])
         found_colnames = set(list(dataframe))
         missing_colnames = required_colnames - found_colnames

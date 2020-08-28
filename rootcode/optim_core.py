@@ -5,11 +5,10 @@ These are:
 * :class:`Data` which holds the tables giving objective/constraint scores for each potential decision.
 * :class:`Problem` which holds a single optimization problem.
 * :class:`Analysis` and subclasses, which hold a collection of problems that make up a trade-off curve or other analysis.
-
-    * :class:`Single`
-    * :class:`ConfigList`
-    * :class:`NDimFrontier`
-    * :class:`WeightTableIterator`
+    - :class:`Single`
+    - :class:`ConfigList`
+    - :class:`NDimFrontier`
+    - :class:`WeightTableIterator`
 """
 
 import os
@@ -24,7 +23,7 @@ from collections import namedtuple
 import cvxpy as cvx
 import pandas as pd
 import numpy as np
-import arith_parser as ap
+from . import arith_parser as ap
 
 
 """
@@ -57,15 +56,16 @@ class NPFixedSeed:
 
 
 class Data(object):
-    """Holds data needed for optimization
+    """
+    Holds data needed for optimization
 
-        After initialization refer to ``data.factor_names`` and ``data.option_names``
-        for the labels attached to each category. These are taken from file or column names depending
-        on the files_by_factor argument.
+    After initialization refer to ``data.factor_names`` and ``data.option_names``
+    for the labels attached to each category. These are taken from file or column names depending
+    on the files_by_factor argument.
 
-        Specific data tables can be referenced by ``data[factor_name]``, similar to dictionary reference
-        Columns for particular options can be referenced by ``data[factor_name, option_name]``
-
+    Specific data tables can be referenced by ``data[factor_name]``, similar to dictionary reference
+    Columns for particular options can be referenced by ``data[factor_name, option_name]``
+    
     """
 
     def __init__(self, data_dir, sdu_id_col, data_cols=None,
@@ -73,16 +73,17 @@ class Data(object):
                  file_glob_str=None, sample=None, sample_seed=None):
         """
         Args:
-            data_dir: directory to load data from.
-            sdu_id_col: name of SDU key column
+        * data_dir: directory to load data from.
+        * sdu_id_col: name of SDU key column
 
         Keyword Args:
-            data_cols: names of columns to pull from csv files, default (None) pulls all
-            baseline_file: optional name of baseline file to move to first position in option list
-            file_list: list of files (only the basename) to load from data_dir.
-            files_by_factor: if True, treats separate files as corresponding to factors with one column per option.
-                Otherwise treats files as corresponding to options with one column per factor
-            file_glob_str: if None, loads files in data_dir matching '*.csv', otherwise will match given pattern
+        * data_cols: names of columns to pull from csv files, default (None) pulls all
+        * baseline_file: optional name of baseline file to move to first position in option list
+        * file_list: list of files (only the basename) to load from data_dir.
+        * files_by_factor: if True, treats separate files as corresponding to factors with one column per option.
+            Otherwise treats files as corresponding to options with one column per factor
+        * file_glob_str: if None, loads files in data_dir matching '*.csv', otherwise will match given pattern
+        
         """
 
         # save the calling arguments
@@ -692,7 +693,7 @@ class Analysis(object):
 class Single(Analysis):
     """Analysis container for a single optimization run.
     """
-    def __init__(self, data, config, solver=None):
+    def __init__(self, data, config, weights, solver=None):
         """
 
         Args:
@@ -700,9 +701,8 @@ class Single(Analysis):
             config:
             solver:
         """
-        super(Single, self).__init__(config)  # copies config into self.config
-        self.data = data
-        self.config = config
+        super(Single, self).__init__(data, config)  # copies config into self.config
+        self.weights = weights
         self.solver = solver
         print('self.config: {}'.format(self.config))
 
@@ -770,7 +770,7 @@ class NDimFrontier(Analysis):
         self.npts = self.config['npts']
         self.nobjs = len(self.config['weights'])
         self.weight_vectors = self._make_weight_vectors(self.npts, self.nobjs)
-        for i, wv in enumerate(self.weight_vectors):
+        for wv in self.weight_vectors:
             weight_dict = {f: v for f, v in zip(self.config['weights'].keys(), wv)}
             point_def = self._get_point_def_from_frontier_with_weight_mult(self.config, weight_dict)
             print('adding point with weights: {}'.format(wv))
