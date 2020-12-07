@@ -3,9 +3,9 @@ numexpr>=2.4.6
 numpy
 scipy
 cvxpy
-hg+https://bitbucket.org/natcap/invest@c94dfedffddd#egg=natcap.invest
+git+https://github.com/natcap/invest.git@release/3.9#egg=natcap.invest
 pyside2
 qtpy
 qtawesome
-Shapely>=1.6.4,<1.7.0
+Shapely
 requests
