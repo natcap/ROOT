@@ -29,7 +29,11 @@ jobs:
     build-binaries:
         name: "Build binaries"
         needs: check-syntax-errors
-        runs-on: [windows-latest, macos-latest]
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [windows-latest, macos-latest]
         env:
             PYTHON_VERSION: 3.7
             PYTHON_ARCH: x64
