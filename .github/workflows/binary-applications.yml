@@ -54,14 +54,14 @@ jobs:
                   channels: conda-forge
 
             - name: Install build dependencies
-              shell: bash -l {1}
+              shell: bash -l {0}
               run: |
                   conda install -c conda-forge wheel numpy make
                   conda install --file requirements-dev.txt
                   conda install --file requirements.txt
 
             - name: Build binaries
-              shell: bash -l {1}
+              shell: bash -l {0}
               run: make binaries
 
             - name: Upload installer artifact
