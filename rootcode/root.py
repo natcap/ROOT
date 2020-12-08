@@ -10,8 +10,8 @@ import json
 from math import sqrt
 
 import pandas as pd
-import ogr
-import gdal
+from osgeo import ogr
+from osgeo import gdal
 from natcap.invest.ui import model, inputs
 
 sys.path.extend([os.getcwd()])
