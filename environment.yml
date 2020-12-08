@@ -1,0 +1,19 @@
+name: env
+channels:
+    - conda-forge
+    - defaults
+dependencies:
+    - make
+    - pandas
+    - numexpr>=2.4.6
+    - numpy
+    - scipy
+    - cvxpy
+    - pyside2
+    - qtpy
+    - qtawesome
+    - Shapely
+    - requests
+    - pygeoprocessing
+    - pip:
+        - git+https://github.com/natcap/invest.git@release/3.9#egg=natcap.invest
