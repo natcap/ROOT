@@ -14,20 +14,10 @@ if is_win:
 else:
     proj_datas = ((os.path.join(conda_env, 'share/proj'), 'proj'))
 
-# We're in a virtualenv if the expected env lib dir exists AND the python
-# executable is within the release env dir.
-# NOTE: Pyinstaller seems to pick up packages within the global site-packages
-# just fine, so we don't need to modify the pathext when we're not in a
-# virtualenv.
-if os.path.exists(env_path_base) and sys.executable.startswith(release_env_dir):
-    env_path_base = os.path.abspath(env_path_base)
-    path_extension.insert(0, env_path_base)
-    path_extension.insert(0, os.path.join(env_path_base, 'site-packages'))
-
 # Add the root_ui directory to the extended path.
 path_extension.insert(0, os.path.abspath('..'))
 
-a = Analysis([os.path.join('..', 'root.py')],
+a = Analysis([os.path.join('..', 'rootcode', 'root.py')],
              pathex=path_extension,
              binaries=None,
              datas=[('qt.conf', '.'), proj_datas],
