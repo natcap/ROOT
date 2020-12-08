@@ -7,11 +7,12 @@ from PyInstaller.compat import is_win
 block_cipher = None
 
 path_extension = []
-release_env_dir = os.path.abspath(os.path.join('..', 'root_env'))
+conda_env = os.environ['CONDA_PREFIX']
+
 if is_win:
-    env_path_base = os.path.join(release_env_dir, 'lib')
+    proj_datas = ((os.path.join(conda_env, 'Library/share/proj'), 'proj'))
 else:
-    env_path_base = os.path.join(release_env_dir, 'lib', 'python2.7')
+    proj_datas = ((os.path.join(conda_env, 'share/proj'), 'proj'))
 
 # We're in a virtualenv if the expected env lib dir exists AND the python
 # executable is within the release env dir.
@@ -29,7 +30,7 @@ path_extension.insert(0, os.path.abspath('..'))
 a = Analysis([os.path.join('..', 'root.py')],
              pathex=path_extension,
              binaries=None,
-             datas=[('qt.conf', '.')],
+             datas=[('qt.conf', '.'), proj_datas],
              hiddenimports=[
                 'pygeoprocessing',
                 'root',
