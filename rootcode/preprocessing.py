@@ -922,29 +922,29 @@ def _create_overlapping_activity_mask(mask_path_list, target_file,
         mask_path_list, aligned_mask_paths, ['near']*len(mask_path_list),
         ref_info['pixel_size'], bounding_box_mode=ref_info['bounding_box'])
 
-    def pixel_op(*vals):
+    def all_pixels_have_value(*vals):
         pixels_with_complete_overlap = numpy.array(
             vals[0].shape, dtype=numpy.bool)
+        pixels_with_complete_overlap[:] = 1  # assume all valid
 
         for index, array in enumerate(vals):
+            # numpy.isclose will work for floating-point and integer rasters,
+            # direct equality comparison will not.
             pixels_with_complete_overlap  &= numpy.isclose(
-                array, mask_nodatas[index]):
+                array, mask_nodatas[index])
 
+        output_array = numpy.full(pixels_with_complete_overlap.shape,
+                                  ref_nodata, dtype=ref_info['numpy_type'])
+        output_array[pixels_with_complete_overlap] = 1
 
-        if all([x == nodata for x, nodata in zip(vals, mask_nodatas)]):
-            return ref_nodata
-        else:
-            return 1
-
-    def all_pixels_have_value(*vals):
-        pass
+        return pixels_with_complete_overlap
 
     pygeoprocessing.raster_calculator(
         [(path, 1) for path in aligned_mask_paths],
         all_pixels_have_value,
         target_file,
         ref_info['datatype'],
-        ref_info['nodata'][0])
+        ref_nodata)
 
 
 if __name__ == '__main__':
