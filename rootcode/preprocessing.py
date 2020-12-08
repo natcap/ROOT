@@ -14,6 +14,7 @@ import json
 import shapely.wkb
 import shapely.prepared
 
+import numpy
 from osgeo import ogr
 from osgeo import gdal
 from osgeo import osr
