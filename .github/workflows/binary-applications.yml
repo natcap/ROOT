@@ -45,7 +45,7 @@ jobs:
             - name: Fetch git tags
               run: git fetch origin +refs/tags/*:refs/tags/*
 
-            - name: Cache conda
+            - name: Set up conda cache
               uses: actions/cache@v2
               env:
                   # Increment to reset cache if environment.yml hasn't changed
@@ -65,6 +65,12 @@ jobs:
                   python-version: ${{ env.PYTHON_VERSION }}
                   environment-file: environment.yml
                   use-only-tar-bz2: true  # Needed for dependency caching
+
+            - name: Install extra packages
+              shell: powershell
+              run: |
+                  choco install vcredist140
+                  refreshenv
 
             - name: Build binaries
               shell: bash -l {0}
