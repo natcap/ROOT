@@ -50,12 +50,12 @@ jobs:
               env:
                   # Increment to reset cache if environment.yml hasn't changed
                   CACHE_NUMBER: 0
-            with:
-                path: ~/conda_pkgs_dir
-                key:
-                    ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{hashFiles('environment.yml') }}
-                restore-keys:
-                    ${{ runner.os }}-conda
+              with:
+                  path: ~/conda_pkgs_dir
+                  key:
+                      ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{hashFiles('environment.yml') }}
+                  restore-keys:
+                      ${{ runner.os }}-conda
 
             - name: Setup conda environment
               uses: conda-incubator/setup-miniconda@v2
