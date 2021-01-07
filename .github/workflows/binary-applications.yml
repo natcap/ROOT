@@ -59,6 +59,7 @@ jobs:
                   conda install -c conda-forge make
                   conda install -c conda-forge --file requirements-dev.txt
                   conda install -c conda-forge --file requirements.txt
+                  pip install "natcap.invest>=3.9"
 
             - name: Build binaries
               shell: bash -l {0}
