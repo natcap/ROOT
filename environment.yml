@@ -15,5 +15,9 @@ dependencies:
     - Shapely
     - requests
     - pygeoprocessing
+    - pyinstaller==3.5
+    - setuptools_scm
+    - cython
+    - wheel
     - pip:
         - natcap.invest>=3.9

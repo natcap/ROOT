@@ -45,6 +45,18 @@ jobs:
             - name: Fetch git tags
               run: git fetch origin +refs/tags/*:refs/tags/*
 
+            - name: Cache conda
+              uses: actions/cache@v2
+              env:
+                  # Increment to reset cache if environment.yml hasn't changed
+                  CACHE_NUMBER: 0
+            with:
+                path: ~/conda_pkgs_dir
+                key:
+                    ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{hashFiles('environment.yml') }}
+                restore-keys:
+                    ${{ runner.os }}-conda
+
             - name: Setup conda environment
               uses: conda-incubator/setup-miniconda@v2
               with:
@@ -52,14 +64,8 @@ jobs:
                   auto-update-conda: true
                   python-version: ${{ env.PYTHON_VERSION }}
                   channels: conda-forge
-
-            - name: Install build dependencies
-              shell: bash -l {0}
-              run: |
-                  conda install -c conda-forge make
-                  conda install -c conda-forge --file requirements-dev.txt
-                  conda install -c conda-forge --file requirements.txt
-                  pip install "natcap.invest>=3.9"
+                  environment-file: environment.yml
+                  use-only-tar-bz2: true  # Needed for dependency caching
 
             - name: Build binaries
               shell: bash -l {0}
