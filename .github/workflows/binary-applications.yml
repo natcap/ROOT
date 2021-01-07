@@ -63,7 +63,6 @@ jobs:
                   activate-environment: root-env
                   auto-update-conda: true
                   python-version: ${{ env.PYTHON_VERSION }}
-                  channels: conda-forge
                   environment-file: environment.yml
                   use-only-tar-bz2: true  # Needed for dependency caching
 
@@ -75,6 +74,7 @@ jobs:
               if: failure()
               uses: actions/upload-artifact@v2
               with:
+                  name: dist-${{ github.sha }}-${{ runner.os }}
                   path: dist
 
             - name: Upload installer artifact
