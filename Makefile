@@ -30,8 +30,12 @@ binaries: $(BIN_ZIP)
 $(BIN_ZIP): $(BIN_DIR)
 	cd $(DIST_DIR) && $(ZIP) $(notdir $(BIN_ZIP)) $(notdir $(BIN_DIR))
 
-FORKNAME := $(filter-out ssh: http: https:, $(subst /, ,$(shell hg config paths.default)))
-FORKUSER := $(word 2, $(subst /, ,$(FORKNAME)))
+# The fork name and user here are derived from the git path on github.
+# The fork name will need to be set manually (e.g. make FORKNAME=natcap/invest)
+# if someone wants to build from source outside of git (like if they grabbed
+# a zipfile of the source code).
+FORKNAME := $(word 2, $(subst :,,$(subst github.com, ,$(shell git remote get-url origin))))
+FORKUSER := $(word 1, $(subst /, ,$(FORKNAME)))
 ifeq ($(FORKUSER),natcap)
 	BUCKET := gs://releases.naturalcapitalproject.org
 	DIST_URL_BASE := $(BUCKET)/root/$(VERSION)
