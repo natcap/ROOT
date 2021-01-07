@@ -29,23 +29,3 @@ $(BIN_DIR): dist
 binaries: $(BIN_ZIP)
 $(BIN_ZIP): $(BIN_DIR)
 	cd $(DIST_DIR) && $(ZIP) $(notdir $(BIN_ZIP)) $(notdir $(BIN_DIR))
-
-# The fork name and user here are derived from the git path on github.
-# The fork name will need to be set manually (e.g. make FORKNAME=natcap/invest)
-# if someone wants to build from source outside of git (like if they grabbed
-# a zipfile of the source code).
-FORKNAME := $(word 2, $(subst :,,$(subst github.com, ,$(shell git remote get-url origin))))
-FORKUSER := $(word 1, $(subst /, ,$(FORKNAME)))
-ifeq ($(FORKUSER),natcap)
-	BUCKET := gs://releases.naturalcapitalproject.org
-	DIST_URL_BASE := $(BUCKET)/root/$(VERSION)
-else
-	BUCKET := gs://natcap-dev-build-artifacts
-	DIST_URL_BASE := $(BUCKET)/root/$(FORKUSER)/$(VERSION)
-endif
-DOWNLOAD_DIR_URL := $(subst gs://,https://storage.googleapis.com/,$(DIST_URL_BASE))
-
-deploy: $(BIN_ZIP)
-	$(GSUTIL) cp $(BIN_ZIP) $(DIST_URL_BASE)/$(notdir $(BIN_ZIP))
-	@echo "Binaries have been copied to:"
-	@echo "  * $(DOWNLOAD_DIR_URL)/$(subst $(DIST_DIR)/,,$(BIN_ZIP))"
