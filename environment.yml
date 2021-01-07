@@ -16,4 +16,4 @@ dependencies:
     - requests
     - pygeoprocessing
     - pip:
-        - git+https://github.com/natcap/invest.git@release/3.9#egg=natcap.invest
+        - natcap.invest>=3.9
