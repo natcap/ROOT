@@ -2,6 +2,8 @@
 import os
 import sys
 import shutil
+import glob
+import itertools
 from PyInstaller.compat import is_win, is_darwin
 
 block_cipher = None
