@@ -79,8 +79,6 @@ elif is_win:
     a.binaries += [
         (os.path.basename(name), name, 'BINARY') for name in
         glob.glob(os.path.join(conda_env, 'Library/bin/spatialindex*.dll'))]
-    # .exe extension is required if we're on windows.
-    exename += '.exe'
 
 exe = EXE(pyz,
           a.scripts,
@@ -89,7 +87,7 @@ exe = EXE(pyz,
           debug=False,
           strip=None,
           upx=True,
-          console=True )
+          console=True)
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
