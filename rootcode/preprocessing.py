@@ -29,7 +29,6 @@ class RootPreprocessingError(Exception):
     pass
 
 
-
 def execute(args):
     """Encapsulate optimization workflow.
 

@@ -12,3 +12,4 @@ qtawesome
 Shapely
 requests
 pygeoprocessing
+natcap.invest>=3.9

@@ -385,6 +385,7 @@ def validate_objectives_and_constraints_tables(obj_table_file, cons_table_file, 
             )
             raise RootInputError(msg)
 
+
 def validate(args, limit_to=None):
     required_keys = [
         'marginal_raster_table_path',
@@ -452,8 +453,8 @@ def validate(args, limit_to=None):
 
     return validation_error_list
 
-class Root(model.InVESTModel):
 
+class Root(model.InVESTModel):
     def __init__(self):
         model.InVESTModel.__init__(
             self,
