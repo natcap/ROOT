@@ -71,8 +71,14 @@ jobs:
               shell: bash -l {0}
               run: make binaries
 
+            - name: Upload dist directory on failure
+              if: failure()
+              uses: actions/upload-artifact@v2
+              with:
+                  path: dist
+
             - name: Upload installer artifact
               if: always()
-              uses: actions/upload-artifact@v2-preview
+              uses: actions/upload-artifact@v2
               with:
                   path: dist/*.zip
