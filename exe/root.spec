@@ -2,7 +2,7 @@
 import os
 import sys
 import shutil
-from PyInstaller.compat import is_win
+from PyInstaller.compat import is_win, is_darwin
 
 block_cipher = None
 
