@@ -19,5 +19,6 @@ dependencies:
     - setuptools_scm
     - cython
     - wheel
+    - rtree==0.9.4
     - pip:
         - natcap.invest>=3.9
