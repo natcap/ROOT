@@ -67,7 +67,7 @@ jobs:
                   use-only-tar-bz2: true  # Needed for dependency caching
 
             - name: Install extra packages on Windows
-              if: ${{ runner.os == "Windows" }}
+              if: ${{ runner.os == Windows }}
               shell: powershell
               run: |
                   choco install vcredist140
