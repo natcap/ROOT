@@ -7,6 +7,7 @@ dependencies:
     - make
     - pandas
     - numexpr>=2.4.6
+    - nomkl
     - numpy
     - scipy
     - cvxpy
@@ -17,6 +18,8 @@ dependencies:
     - requests
     - pygeoprocessing
     - pyinstaller==3.5
+    - setuptools
+    - toml
     - setuptools_scm
     - cython
     - wheel
