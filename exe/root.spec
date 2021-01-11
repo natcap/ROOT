@@ -37,6 +37,7 @@ a = Analysis([os.path.join(os.getcwd(), 'rootcode', 'root.py')],  # Assume we're
                 'rtree',
                 'pandas._libs.skiplist',
                 'scipy._lib.messagestream',
+                'scipy.special.cython_special',
              ],
              hookspath=[os.path.join(os.getcwd(), 'exe', 'hooks')],
              runtime_hooks=None,

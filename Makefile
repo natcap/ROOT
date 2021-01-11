@@ -28,6 +28,7 @@ $(DIST_DIR) $(BUILD_DIR):
 	mkdir -p $@
 
 $(BIN_DIR): dist
+	rm -rf $(BIN_DIR)
 	mkdir -p $(BIN_DIR)
 	$(PYTHON) -m PyInstaller --workpath $(BUILD_DIR)/pyi-build --clean --distpath $(BIN_DIR) --additional-hooks-dir=exe/hooks exe/root.spec
 	$(BIN_DIR)/root/root --test-imports

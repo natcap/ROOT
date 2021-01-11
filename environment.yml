@@ -1,4 +1,3 @@
-name: root-env
 channels:
     - conda-forge
     - defaults
@@ -9,7 +8,6 @@ dependencies:
     - numexpr>=2.4.6
     - nomkl
     - numpy
-    - scipy
     - cvxpy
     - pyside2
     - qtpy
@@ -17,7 +15,7 @@ dependencies:
     - Shapely
     - requests
     - pygeoprocessing
-    - pyinstaller==3.5
+    - pyinstaller==4.1
     - setuptools
     - toml
     - setuptools_scm
@@ -26,5 +24,6 @@ dependencies:
     - wheel
     - rtree>=0.8.2,!=0.9.1,<=0.9.4  # For pyinstaller compatibility.  See natcap/invest#439
     - pip
+    - 7zip
     - pip:
         - natcap.invest>=3.9
