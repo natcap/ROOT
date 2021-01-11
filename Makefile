@@ -15,6 +15,7 @@ ifeq ($(OS),Windows_NT)
 	SHELL := /usr/bin/bash
 else
 	SHELL := /bin/bash
+endif
 
 BIN_DIR=$(DIST_DIR)/root-$(ARCH)-$(OS)
 BIN_ZIP=$(DIST_DIR)/root-$(VERSION)-$(OS)-$(ARCH).zip
