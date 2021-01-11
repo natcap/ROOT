@@ -30,7 +30,7 @@ $(DIST_DIR) $(BUILD_DIR):
 $(BIN_DIR): dist
 	mkdir -p $(BIN_DIR)
 	$(PYTHON) -m PyInstaller --workpath $(BUILD_DIR)/pyi-build --clean --distpath $(BIN_DIR) --additional-hooks-dir=exe/hooks exe/root.spec
-	$(BIN_DIR)/root/root.exe --test-imports
+	$(BIN_DIR)/root/root --test-imports
 	cp root_launcher.bat $(BIN_DIR)/root.bat
 
 binaries: $(BIN_ZIP)
