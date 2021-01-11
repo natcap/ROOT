@@ -38,6 +38,7 @@ a = Analysis([os.path.join(os.getcwd(), 'natcap', 'root', 'root.py')],  # Assume
                 'pandas._libs.skiplist',
                 'scipy._lib.messagestream',
                 'scipy.special.cython_special',
+                'scipy.spatial.transform._rotation_groups',
              ],
              hookspath=[os.path.join(os.getcwd(), 'exe', 'hooks')],
              runtime_hooks=None,
