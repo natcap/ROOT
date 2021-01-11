@@ -21,6 +21,7 @@ dependencies:
     - setuptools
     - toml
     - setuptools_scm
+    - psutil
     - cython
     - wheel
     - rtree>=0.8.2,!=0.9.1,<=0.9.4  # For pyinstaller compatibility.  See natcap/invest#439
