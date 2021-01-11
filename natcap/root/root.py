@@ -16,11 +16,11 @@ from natcap.invest.ui import model, inputs
 
 sys.path.extend([os.getcwd()])
 
-from . import preprocessing
-from . import postprocessing
-from . import optimization
+from natcap.root import preprocessing
+from natcap.root import postprocessing
+from natcap.root import optimization
 
-LOGGER = logging.getLogger('natcap.invest.root')
+LOGGER = logging.getLogger(__name__)
 
 
 class RootInputError(Exception):

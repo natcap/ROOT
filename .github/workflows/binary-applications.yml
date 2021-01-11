@@ -78,6 +78,7 @@ jobs:
               shell: bash -l {0}
               run: |
                   pip install "scipy>=1.5.0"  # scipy~=1.4 has an import issue with _ufuncs.
+                  pip install --no-deps .  # Install root as a wheel
                   make binaries
 
             - name: Upload dist directory on failure

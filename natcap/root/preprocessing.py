@@ -22,7 +22,7 @@ import numpy as np
 import pandas as pd
 
 import pygeoprocessing
-from . import arith_parser as ap
+from natcap.root import arith_parser as ap
 
 
 class RootPreprocessingError(Exception):
