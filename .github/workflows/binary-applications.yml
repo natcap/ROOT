@@ -74,6 +74,7 @@ jobs:
                   refreshenv
 
             - name: Build binaries
+              timeout-minutes: 20  # Encountered some probably-infinite loops around the 10 minute mark.
               shell: bash -l {0}
               run: make binaries
 

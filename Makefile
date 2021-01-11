@@ -10,6 +10,12 @@ VERSION:=$(shell $(PYTHON) -c "import setuptools_scm; print(setuptools_scm.get_v
 BUILD_DIR:=build
 DIST_DIR:=dist
 
+# We're assuming that this will be run on github actions, where bash is always available.
+ifeq ($(OS),Windows_NT)
+	SHELL := /usr/bin/bash
+else
+	SHELL := /bin/bash
+
 BIN_DIR=$(DIST_DIR)/root-$(ARCH)-$(OS)
 BIN_ZIP=$(DIST_DIR)/root-$(VERSION)-$(OS)-$(ARCH).zip
 
@@ -18,10 +24,10 @@ print-%:
 	@echo "$* = $($*)"
 
 $(DIST_DIR) $(BUILD_DIR):
-	powershell.exe mkdir -Force -Path $@
+	mkdir -p $@
 
 $(BIN_DIR): dist
-	-powershell.exe mkdir -Force -Path $(BIN_DIR)
+	mkdir -p $(BIN_DIR)
 	$(PYTHON) -m PyInstaller --workpath $(BUILD_DIR)/pyi-build --clean --distpath $(BIN_DIR) --additional-hooks-dir=exe/hooks exe/root.spec
 	$(BIN_DIR)/root/root.exe --test-imports
 	cp root_launcher.bat $(BIN_DIR)/root.bat
