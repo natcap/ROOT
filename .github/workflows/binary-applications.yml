@@ -146,4 +146,5 @@ jobs:
               shell: bash -l {0}
               run: |
                   pip install pytest
+                  pip install --no-deps .  # Install root as a wheel
                   pytest tests
