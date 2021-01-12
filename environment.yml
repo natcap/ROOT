@@ -24,6 +24,5 @@ dependencies:
     - wheel
     - rtree>=0.8.2,!=0.9.1,<=0.9.4  # For pyinstaller compatibility.  See natcap/invest#439
     - pip
-    - 7zip
     - pip:
         - natcap.invest>=3.9
