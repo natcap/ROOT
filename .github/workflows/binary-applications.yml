@@ -74,7 +74,7 @@ jobs:
                   refreshenv
 
             - name: Install extra packages on Mac
-              if: ${{ runner.os == 'Mac' }}
+              if: ${{ runner.os == 'macOS' }}
               shell: bash -l {0}
               run: |
                   # Workaround for mac Qt error: qt.qpa.plugin:
