@@ -2,7 +2,7 @@ import pytest
 import os
 import copy
 
-from .. import optim_core
+from natcap.root import optim_core
 
 
 @pytest.fixture(scope='module')
@@ -43,4 +43,3 @@ def test_weight_table_iterator(problem_def, data):
     wti.save_decision_tables(output_folder)
     for i in range(wti.npts):
         assert os.path.isfile(os.path.join(output_folder, 'solution_{}.csv'.format(i)))
-

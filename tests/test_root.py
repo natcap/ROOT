@@ -1,6 +1,6 @@
 import pytest
 
-import root
+from natcap.root import root
 
 
 def list_elements_equal(list_a, list_b):
