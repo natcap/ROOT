@@ -39,6 +39,7 @@ a = Analysis([os.path.join(os.getcwd(), 'natcap', 'root', 'root.py')],  # Assume
                 'scipy._lib.messagestream',
                 'scipy.special.cython_special',
                 'scipy.spatial.transform._rotation_groups',
+                'cmath',
              ],
              hookspath=[os.path.join(os.getcwd(), 'exe', 'hooks')],
              runtime_hooks=None,
