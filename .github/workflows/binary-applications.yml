@@ -92,4 +92,5 @@ jobs:
               if: always()
               uses: actions/upload-artifact@v2
               with:
+                  name: ROOT-application-${{ runner.os }}
                   path: dist/*.zip
