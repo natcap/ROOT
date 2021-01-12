@@ -57,6 +57,11 @@ jobs:
                   restore-keys:
                       ${{ runner.os }}-conda
 
+            - name: Print starting environment variables
+              shell: bash -l {0}
+              run: |
+                  env  # List all environment variables defined; for debugging.
+
             - name: Setup conda environment
               uses: conda-incubator/setup-miniconda@v2
               with:
@@ -77,6 +82,7 @@ jobs:
               timeout-minutes: 20  # Encountered some probably-infinite loops around the 10 minute mark.
               shell: bash -l {0}
               run: |
+                  env  # List all environment variables defined; for debugging.
                   pip install opencv-python-headless  # weird workaround for Qt/Cocoa issue on mac.  https://stackoverflow.com/a/54372571/299084
                   pip install "scipy>=1.5.0"  # scipy~=1.4 has an import issue with _ufuncs.
                   pip install --no-deps .  # Install root as a wheel
