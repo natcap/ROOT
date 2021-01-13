@@ -1,7 +1,7 @@
 name: root-env  # There's a github actions warning if this isn't defined.
 channels:
-    - defaults
     - conda-forge
+    - defaults
 dependencies:
     - python=3.7
     - make
