@@ -16,9 +16,9 @@ from natcap.invest.ui import model, inputs
 
 sys.path.extend([os.getcwd()])
 
-from natcap.root import preprocessing
-from natcap.root import postprocessing
-from natcap.root import optimization
+from rootcode import preprocessing
+from rootcode import postprocessing
+from rootcode import optimization
 
 LOGGER = logging.getLogger(__name__)
 

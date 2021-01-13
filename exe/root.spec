@@ -19,7 +19,7 @@ else:
 # Add the root_ui directory to the extended path.
 path_extension.insert(0, os.path.abspath('..'))
 
-a = Analysis([os.path.join(os.getcwd(), 'natcap', 'root', 'root.py')],  # Assume we're building from the project root
+a = Analysis([os.path.join(os.getcwd(), 'rootcode', 'root.py')],  # Assume we're building from the project root
              pathex=path_extension,
              binaries=None,
              datas=[('qt.conf', '.'), proj_datas],
@@ -40,6 +40,7 @@ a = Analysis([os.path.join(os.getcwd(), 'natcap', 'root', 'root.py')],  # Assume
                 'scipy.special.cython_special',
                 'scipy.spatial.transform._rotation_groups',
                 'cmath',
+                'rootcode',
              ],
              hookspath=[os.path.join(os.getcwd(), 'exe', 'hooks')],
              runtime_hooks=None,
