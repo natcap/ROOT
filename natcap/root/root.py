@@ -27,6 +27,10 @@ class RootInputError(Exception):
     pass
 
 
+# TODO: Complete this according to the UI, build the UI inputs off of this.
+ARGS_SPEC = {}
+
+
 def execute(args):
     """root.
 
