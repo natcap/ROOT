@@ -11,7 +11,8 @@ BUILD_DIR:=build
 DIST_DIR:=dist
 
 # We're assuming that this will be run on github actions, where bash is always available.
-ifeq ($(OS),Windows_NT)
+# $(OS) is defined by python's platform.system(), above.
+ifeq ($(OS),Windows)
 	SHELL := /usr/bin/bash
 	USER_LAUNCH_SCRIPT_EXT := bat
 else
