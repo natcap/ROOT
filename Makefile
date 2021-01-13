@@ -13,8 +13,10 @@ DIST_DIR:=dist
 # We're assuming that this will be run on github actions, where bash is always available.
 ifeq ($(OS),Windows_NT)
 	SHELL := /usr/bin/bash
+	USER_LAUNCH_SCRIPT_EXT := bat
 else
 	SHELL := /bin/bash
+	USER_LAUNCH_SCRIPT_EXT := command
 endif
 
 BIN_DIR=$(DIST_DIR)/root-$(ARCH)-$(OS)
@@ -32,7 +34,7 @@ $(BIN_DIR): dist
 	mkdir -p $(BIN_DIR)
 	$(PYTHON) -m PyInstaller --workpath $(BUILD_DIR)/pyi-build --clean --distpath $(BIN_DIR) --additional-hooks-dir=exe/hooks exe/root.spec
 	$(BIN_DIR)/root/root --test-imports
-	cp root_launcher.bat $(BIN_DIR)/root.bat
+	cp root_launcher.$(USER_LAUNCH_SCRIPT_EXT) $(BIN_DIR)/root.$(USER_LAUNCH_SCRIPT_EXT)
 
 binaries: $(BIN_ZIP)
 $(BIN_ZIP): $(BIN_DIR)
