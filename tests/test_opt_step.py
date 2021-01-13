@@ -4,7 +4,7 @@ Generated: Fri Apr 20 14:49:39 2018
 InVEST version: 3.3.3
 """
 
-from rootcode import root
+from natcap.root import root
 
 
 args = {

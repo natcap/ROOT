@@ -2,7 +2,7 @@ import pytest
 import os
 import copy
 
-from rootcode import optim_core
+from natcap.root import optim_core
 
 
 @pytest.fixture(scope='module')

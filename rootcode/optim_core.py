@@ -24,7 +24,7 @@ import cvxpy as cvx
 import pandas as pd
 import numpy as np
 
-from rootcode import arith_parser as ap
+from natcap.root import arith_parser as ap
 
 
 """
