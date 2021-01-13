@@ -73,16 +73,6 @@ jobs:
                   choco install vcredist140
                   refreshenv
 
-            - name: Install extra packages on Mac
-              if: ${{ runner.os == 'macOS' }}
-              shell: bash -l {0}
-              run: |
-                  # Workaround for mac Qt error: qt.qpa.plugin:
-                  # Could not find the Qt platform plugin "cocoa" in ""
-                  # This application failed to start because no Qt platform plugin could be initialized. Reinstalling the application may fix this problem.
-                  conda uninstall -y Pyside2 Qt
-                  pip install PySide2
-
             - name: Build binaries
               timeout-minutes: 20  # Encountered some probably-infinite loops around the 10 minute mark.
               shell: bash -l {0}
