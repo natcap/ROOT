@@ -16,6 +16,7 @@ from natcap.invest.ui import model, inputs
 
 sys.path.extend([os.getcwd()])
 
+from natcap.invest import validation
 from natcap.root import preprocessing
 from natcap.root import postprocessing
 from natcap.root import optimization
@@ -27,8 +28,169 @@ class RootInputError(Exception):
     pass
 
 
-# TODO: Complete this according to the UI, build the UI inputs off of this.
-ARGS_SPEC = {}
+ARGS_SPEC = {
+    'model_name': 'ROOT',
+    'module': __name__,
+    'userguide_html': '../documentation/root.html',
+    'args_with_spatial_overlap': {
+        "spatial_keys": ['potential_conversion_mask_path',
+                         'spatial_decision_unit_shape'],
+    },
+    'args': {
+        'workspace_dir': validation.WORKSPACE_SPEC,
+        'results_suffix': validation.SUFFIX_SPEC,
+        'do_preprocessing': {
+            'type': 'boolean',
+            'required': True,
+            'about': (
+                "Check to create marginal value tables based on "
+                "raster/serviceshed inputs"),
+            'name': "Do Preprocessing",
+        },
+        'marginal_raster_table_path': {
+            'type': 'csv',
+            'required': True,
+            'about': (
+                "Table that lists names and filepaths for impact "
+                "potential rasters.<br><br>ROOT will aggregate these "
+                "rasters to the spatial units outlined by the SDU "
+                "grid.  See User's Guide for details on file format."),
+            'name': 'Impact Potential Raster Table (CSV)',
+        },
+        'serviceshed_shapefiles_table': {
+            'type': 'csv',
+            'required': True,
+            'about': (
+                "Table that lists names, uris, and service value "
+                "columns for servicesheds.<br><br>ROOT will calculate "
+                "the overlap area and weighted average of each "
+                "serviceshed for each SDU. See User's Guide for "
+                "details on file format."),
+            'name': 'Spatial Weighting Maps Table (CSV)',
+        },
+        'combined_factor_table_path': {
+            'type': 'csv',
+            'required': True,
+            'about': (
+                "This table allows the user to construct composite "
+                "factors, such as ecosystem services weighted by a "
+                "serviceshed.  The value in the 'name' column will be "
+                "used to identify this composite factor in summary "
+                "tables, output maps, and in configuration tables in "
+                "the optimization section.  The value in the 'factors' "
+                "field should list which marginal values and "
+                "shapefiles to multiply together to construct the "
+                "composite factor.  The entry should be comma "
+                "separated, such as 'sed_export, hydropower_capacity'. "
+                "Use an '_' to identify fields of interest within a "
+                "serviceshed shapefile."),
+            'name': 'Composite Factor Table (CSV)',
+        },
+        'potential_conversion_mask_path': {
+            'type': 'raster',
+            'required': True,
+            'about': (
+                "Raster that indicates which pixels should be "
+                "considered as potential activity locations.  Values "
+                "must be 1 for activity locations or NODATA for "
+                "excluded locations."),
+            'name': 'Activity Mask Raster',
+        },
+        'spatial_decision_unit_shape': {
+            'type': 'vector',
+            'required': True,
+            'about': (
+                "Determines the shape of the SDUs used to aggregate "
+                "the impact potential and spatial weighting maps.  Can "
+                "be square or hexagon to have ROOT generate an "
+                "appropriately shaped regular grid, or can be the full "
+                "path to an existing SDU shapefile.  If an existing "
+                "shapefile is used, it must contain a unique ID field "
+                "SDU_ID."),
+            'name': 'Spatial Decision Unit Shape',
+        },
+        'spatial_decision_unit_area': {
+            'type': 'number',
+            'required': True,
+            'about': (
+                "Area of each grid cell in the constructed grid. "
+                "Measured in hectares (1 ha = 10,000m^2). This is "
+                "ignored if an existing file is used as the SDU map."),
+            'name': 'Spatial Decision Unit Area (ha)',
+        },
+        'do_optimization': {
+            'type': 'boolean',
+            'required': True,
+            'about': "Check to perform optimization",
+            'name': "Do Optimization",
+        },
+        'optimization_suffix': {
+            'type': 'freestyle_string',
+            'required': False,
+            'about': (
+                "This text will be appended to the optimization "
+                "output folder to distinguish separate analyses."),
+            'name': 'Optimization Results Suffix (Optional)',
+        },
+        'frontier_type': {
+            'type': 'option_string',
+            'required': "do_optimization",
+            'about': (
+                "Determines the mode of operation for the optimizer. "
+                "Can be: <ul><li>weight_table: use to provide "
+                "particular objective weights for a given number of "
+                "optimization runs.  </li><li>frontier: evenly-spaced "
+                "frontier (requires exactly two objectives in "
+                "objectives table).</li> <li>n_dim_frontier: use for "
+                "more than two objective analysis.  Randomly samples "
+                "points on N dimensional "
+                "frontier.</li><li>n_dim_outline: constructs 2D "
+                "frontiers for all pairs of objectives.</li></ul>"),
+            'name': 'Analysis Type',
+            'validation_options': {
+                'options': ["weight_table", "frontier", "n_dim_frontier",
+                            "n_dim_outline"],
+            }
+        },
+        'number_of_frontier_points': {
+            'type': 'number',
+            'required': "do_optimization",
+            'about': (
+                "Determines number of points to calculate.  Note that "
+                "for 'frontier' runs, the actual number of points will "
+                "be higher than this number to ensure whole-frontier "
+                "coverage."),
+            'name': 'Number of Frontier Points',
+        },
+        'objectives_table_path': {
+            'type': 'csv',
+            'required': "do_optimization",
+            'about': (
+                "This table identifies which factors from the "
+                "preprocessing results to use as objectives in the "
+                "optimization.  Values in the 'objective' column "
+                "should match names assigned to marginal values, "
+                "servicesheds, or combined factors.  For the 'single' "
+                "optimization option, the values in 'weight' should be "
+                "the appropriate numeric values.  For all others, the "
+                "'weight' column should say 'minimize' or 'maximize' "
+                "according to whether the optimization should prefer "
+                "lower or higher values for that factor, respectively."),
+            'name': 'Objectives Table (CSV)',
+        },
+        'targets_table_path': {
+            'type': 'csv',
+            'required': "do_optimization",
+            'about': (
+                "This table identifies targets (constraints) to apply "
+                "to the optimization."),
+            'name': 'Targets Table (CSV)',
+            'validation_options': {
+                'required_fields': ["name", "cons_type", "value"]
+            }
+        }
+    }
+}
 
 
 def execute(args):
@@ -391,71 +553,30 @@ def validate_objectives_and_constraints_tables(obj_table_file, cons_table_file, 
 
 
 def validate(args, limit_to=None):
-    required_keys = [
-        'marginal_raster_table_path',
-        'potential_conversion_mask_path',
-        'spatial_decision_unit_shape',
-        'spatial_decision_unit_area',
-    ]
-    if 'optimization_container' in args and args['optimization_container']:
-        required_keys.extend([
-            'frontier_type',  # ony when optimization_container
-            'number_of_frontier_points',  # only when optimization_container
-            'objectives_table_path', # only when optimization_container
-            'targets_table_path',  # only when optimization_container
-        ])
-
-    missing_key_list = []
-    no_value_list = []
-    validation_error_list = []
-    for key in required_keys:
-        if limit_to is None or limit_to == key:
-            if key not in args:
-                missing_key_list.append(key)
-            elif args[key] in ('', None):
-                no_value_list.append(key)
+    return validation.validate(
+        args, ARGS_SPEC['args'], ARGS_SPEC['args_with_spatial_overlap'])
 
 
-    if (limit_to in ['potential_conversion_mask_path', None] and
-            'potential_conversion_mask_path' in args):
-        raster = gdal.OpenEx(args['potential_conversion_mask_path'],
-                             gdal.OF_RASTER)
-        if raster is None:
-            validation_error_list.append(([key], 'Must be a raster'))
-        raster = None
-
-    if (limit_to in ['targets_table_path', None] and
-            'targets_table_path' in args):
-        dataframe = pd.read_csv(args['targets_table_path'])
-        required_colnames = set(['name', 'cons_type', 'value'])
-        found_colnames = set(list(dataframe))
-        missing_colnames = required_colnames - found_colnames
-        if len(missing_colnames) > 0:
-            validation_error_list.append(
-                (['targets_table_path'],
-                 'Table is missing required columns: %s' % sorted(
-                     missing_colnames)))
-
-    if (limit_to in ['frontier_type', None] and
-            'frontier_type' in args):
-        if args['frontier_type'] not in (
-                'weight_table', 'frontier', 'n_dim_frontier',
-                'n_dim_outline'):
-            validation_error_list.append(
-                (['frontier_type'], 'Invalid frontier type provided'))
-
-    for number_key in ('number_of_frontier_points',
-                       'spatial_decision_unit_area'):
-        if limit_to in [number_key, None]:
-            if number_key in args:
-                try:
-                    float(args['number_key'])
-                except (ValueError, TypeError):
-                    # ValueError when empty string
-                    # TypeError when None
-                    validation_error_list.append(([key], 'Must be a number'))
-
-    return validation_error_list
+def _create_input_kwargs_from_args_spec(
+        args_key, args_spec, validator):
+    """Helper function to return kwargs for most model inputs.
+    Args:
+        args_key: The args key of the input from which a kwargs
+            dict is being built.
+        args_spec: The ARGS_SPEC object to reference.
+        validator: The validator callable to provide to the ``validator`` kwarg
+            for the input.
+    Returns:
+        A dict of ``kwargs`` to explode to an ``inputs.GriddedInput``
+        object at creation time.
+    """
+    model_spec = args_spec['args']
+    return {
+        'args_key': args_key,
+        'helptext': model_spec[args_key]['about'],
+        'label': model_spec[args_key]['name'],
+        'validator': validator,
+    }
 
 
 class Root(model.InVESTModel):
@@ -474,84 +595,38 @@ class Root(model.InVESTModel):
             expanded=True,
             label=u'Preprocessing Arguments')
         self.add_input(self.preprocessing_container)
+
         self.do_preprocessing = inputs.Checkbox(
-            args_key=u'do_preprocessing',
-            helptext=(
-                u"Check to create marginal value tables based on "
-                u"raster/serviceshed inputs"),
-            label=u'Do Preprocessing')
+            **_create_input_kwargs_from_args_spec('do_preprocessing'))
         self.preprocessing_container.add_input(self.do_preprocessing)
+
         self.marginal_raster_table_path = inputs.File(
-            args_key=u'marginal_raster_table_path',
-            helptext=(
-                u"Table that lists names and filepaths for impact "
-                u"potential rasters.<br><br>ROOT will aggregate these "
-                u"rasters to the spatial units outlined by the SDU "
-                u"grid.  See User's Guide for details on file format."),
-            label=u'Impact Potential Raster Table (CSV)',
-            validator=self.validator)
+            **_create_input_kwargs_from_args_spec('marginal_raster_table_path'))
         self.preprocessing_container.add_input(self.marginal_raster_table_path)
+
+
         self.serviceshed_shapefiles_table = inputs.File(
-            args_key=u'serviceshed_shapefiles_table',
-            helptext=(
-                u"Table that lists names, uris, and service value "
-                u"columns for servicesheds.<br><br>ROOT will calculate "
-                u"the overlap area and weighted average of each "
-                u"serviceshed for each SDU. See User's Guide for "
-                u"details on file format."),
-            label=u'Spatial Weighting Maps Table (CSV)',
-            validator=self.validator)
+            **_create_input_kwargs_from_args_spec('serviceshed_shapefiles_table'))
         self.preprocessing_container.add_input(self.serviceshed_shapefiles_table)
+
+
         self.combined_factor_table_path = inputs.File(
-            args_key=u'combined_factor_table_path',
-            helptext=(
-                u"This table allows the user to construct composite "
-                u"factors, such as ecosystem services weighted by a "
-                u"serviceshed.  The value in the 'name' column will be "
-                u"used to identify this composite factor in summary "
-                u"tables, output maps, and in configuration tables in "
-                u"the optimization section.  The value in the 'factors' "
-                u"field should list which marginal values and "
-                u"shapefiles to multiply together to construct the "
-                u"composite factor.  The entry should be comma "
-                u"separated, such as 'sed_export, hydropower_capacity'. "
-                u"Use an '_' to identify fields of interest within a "
-                u"serviceshed shapefile."),
-            label=u'Composite Factor Table (CSV)',
-            validator=self.validator)
+            **_create_input_kwargs_from_args_spec('combined_factor_table_path'))
         self.preprocessing_container.add_input(self.combined_factor_table_path)
+
         self.potential_conversion_mask_path = inputs.File(
-            args_key=u'potential_conversion_mask_path',
-            helptext=(
-                u"Raster that indicates which pixels should be "
-                u"considered as potential activity locations.  Values "
-                u"must be 1 for activity locations or NODATA for "
-                u"excluded locations."),
-            label=u'Activity Mask Raster',
-            validator=self.validator)
+            **_create_input_kwargs_from_args_spec('potential_conversion_mask_path'))
         self.preprocessing_container.add_input(self.potential_conversion_mask_path)
+
+
         self.spatial_decision_unit_shape = inputs.Text(
-            args_key=u'spatial_decision_unit_shape',
-            helptext=(
-                u"Determines the shape of the SDUs used to aggregate "
-                u"the impact potential and spatial weighting maps.  Can "
-                u"be square or hexagon to have ROOT generate an "
-                u"appropriately shaped regular grid, or can be the full "
-                u"path to an existing SDU shapefile.  If an existing "
-                u"shapefile is used, it must contain a unique ID field "
-                u"SDU_ID."),
-            label=u'Spatial Decision Unit Shape',
-            validator=self.validator)
+            **_create_input_kwargs_from_args_spec('spatial_decision_unit_shape'))
         self.preprocessing_container.add_input(self.spatial_decision_unit_shape)
+
         self.spatial_decision_unit_area = inputs.Text(
-            args_key=u'spatial_decision_unit_area',
-            helptext=(
-                u"Area of each grid cell in the constructed grid. "
-                u"Measured in hectares (1 ha = 10,000m^2). This is "
-                u"ignored if an existing file is used as the SDU map."),
-            label=u'Spatial Decision Unit Area (ha)',
-            validator=self.validator)
+            **_create_input_kwargs_from_args_spec('spatial_decision_unit_area'))
         self.preprocessing_container.add_input(self.spatial_decision_unit_area)
+
         self.optimization_container = inputs.Container(
             args_key=u'optimization_container',
             expandable=False,
@@ -559,71 +634,30 @@ class Root(model.InVESTModel):
             label=u'Optimization Arguments')
         self.add_input(self.optimization_container)
         self.do_optimization = inputs.Checkbox(
-            args_key=u'do_optimization',
-            helptext=u'Check to perform optimization',
-            label=u'Do Optimization')
+            **_create_input_kwargs_from_args_spec('do_optimization'))
         self.optimization_container.add_input(self.do_optimization)
+
+
         self.optimization_suffix = inputs.Text(
-            args_key=u'optimization_suffix',
-            helptext=(
-                u"This text will be appended to the optimization "
-                u"output folder to distinguish separate analyses."),
-            label=u'Optimization Results Suffix (Optional)',
-            validator=self.validator)
+            **_create_input_kwargs_from_args_spec('optimization_suffix'))
         self.optimization_container.add_input(self.optimization_suffix)
+
+
         self.frontier_type = inputs.Text(
-            args_key=u'frontier_type',
-            helptext=(
-                u"Determines the mode of operation for the optimizer. "
-                u"Can be: <ul><li>weight_table: use to provide "
-                u"particular objective weights for a given number of "
-                u"optimization runs.  </li><li>frontier: evenly-spaced "
-                u"frontier (requires exactly two objectives in "
-                u"objectives table).</li> <li>n_dim_frontier: use for "
-                u"more than two objective analysis.  Randomly samples "
-                u"points on N dimensional "
-                u"frontier.</li><li>n_dim_outline: constructs 2D "
-                u"frontiers for all pairs of objectives.</li></ul>"),
-            label=u'Analysis Type',
-            validator=self.validator)
+            **_create_input_kwargs_from_args_spec('frontier_type'))
         self.optimization_container.add_input(self.frontier_type)
+
         self.number_of_frontier_points = inputs.Text(
-            args_key=u'number_of_frontier_points',
-            helptext=(
-                u"Determines number of points to calculate.  Note that "
-                u"for 'frontier' runs, the actual number of points will "
-                u"be higher than this number to ensure whole-frontier "
-                u"coverage."),
-            label=u'Number of Frontier Points',
-            validator=self.validator)
+            **_create_input_kwargs_from_args_spec('number_of_frontier_points'))
         self.optimization_container.add_input(self.number_of_frontier_points)
+
         self.objectives_table_path = inputs.File(
-            args_key=u'objectives_table_path',
-            helptext=(
-                u"This table identifies which factors from the "
-                u"preprocessing results to use as objectives in the "
-                u"optimization.  Values in the 'objective' column "
-                u"should match names assigned to marginal values, "
-                u"servicesheds, or combined factors.  For the 'single' "
-                u"optimization option, the values in 'weight' should be "
-                u"the appropriate numeric values.  For all others, the "
-                u"'weight' column should say 'minimize' or 'maximize' "
-                u"according to whether the optimization should prefer "
-                u"lower or higher values for that factor, respectively."),
-            label=u'Objectives Table (CSV)',
-            validator=self.validator)
+            **_create_input_kwargs_from_args_spec('objectives_table_path'))
         self.optimization_container.add_input(self.objectives_table_path)
+
         self.targets_table_path = inputs.File(
-            args_key=u'targets_table_path',
-            helptext=(
-                u"This table identifies targets (constraints) to apply "
-                u"to the optimization."),
-            label=u'Targets Table (CSV)',
-            validator=self.validator)
+            **_create_input_kwargs_from_args_spec('targets_table_path'))
         self.optimization_container.add_input(self.targets_table_path)
-
-        # Set interactivity, requirement as input sufficiency changes
-
 
     def assemble_args(self):
         args = {
