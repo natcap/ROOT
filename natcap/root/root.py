@@ -13,6 +13,9 @@ from math import sqrt
 import pandas as pd
 from osgeo import ogr
 from osgeo import gdal
+import PySide2  # pragma: no cover
+from qtpy import QtWidgets
+from qtpy import QtGui
 from natcap.invest.ui import model, inputs
 
 sys.path.extend([os.getcwd()])
