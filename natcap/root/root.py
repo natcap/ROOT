@@ -567,11 +567,11 @@ def _create_input_kwargs_from_args_spec(args_key):
         A dict of ``kwargs`` to explode to an ``inputs.GriddedInput``
         object at creation time.
     """
-    model_spec = args_spec['args']
+    model_spec = ARGS_SPEC['args']
     return {
         'args_key': args_key,
-        'helptext': ARGS_SPEC[args_key]['about'],
-        'label': ARGS_SPEC[args_key]['name'],
+        'helptext': model_spec[args_key]['about'],
+        'label': model_spec[args_key]['name'],
         'validator': validate,
     }
 
