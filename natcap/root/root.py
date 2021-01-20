@@ -557,23 +557,30 @@ def validate(args, limit_to=None):
         args, ARGS_SPEC['args'], ARGS_SPEC['args_with_spatial_overlap'])
 
 
-def _create_input_kwargs_from_args_spec(args_key):
+def _create_input_kwargs_from_args_spec(args_key, validate=True):
     """Helper function to return kwargs for most model inputs.
     Args:
         args_key: The args key of the input from which a kwargs
             dict is being built.
+        validate=True: Whether to include the ``validator`` key in the return
+            kwargs dict.  Some inputs (e.g. ``Checkbox``) do not take a
+            ``validator`` argument.
 
     Returns:
         A dict of ``kwargs`` to explode to an ``inputs.GriddedInput``
         object at creation time.
     """
     model_spec = ARGS_SPEC['args']
-    return {
+    kwargs = {
         'args_key': args_key,
         'helptext': model_spec[args_key]['about'],
         'label': model_spec[args_key]['name'],
-        'validator': validate,
     }
+
+    if validate:
+        kwargs['validator'] = validate
+
+    return kwargs
 
 
 class Root(model.InVESTModel):
@@ -594,7 +601,8 @@ class Root(model.InVESTModel):
         self.add_input(self.preprocessing_container)
 
         self.do_preprocessing = inputs.Checkbox(
-            **_create_input_kwargs_from_args_spec('do_preprocessing'))
+            **_create_input_kwargs_from_args_spec(
+                'do_preprocessing', validate=False))
         self.preprocessing_container.add_input(self.do_preprocessing)
 
         self.marginal_raster_table_path = inputs.File(
@@ -631,14 +639,13 @@ class Root(model.InVESTModel):
             label=u'Optimization Arguments')
         self.add_input(self.optimization_container)
         self.do_optimization = inputs.Checkbox(
-            **_create_input_kwargs_from_args_spec('do_optimization'))
+            **_create_input_kwargs_from_args_spec(
+                'do_optimization', validate=False))
         self.optimization_container.add_input(self.do_optimization)
-
 
         self.optimization_suffix = inputs.Text(
             **_create_input_kwargs_from_args_spec('optimization_suffix'))
         self.optimization_container.add_input(self.optimization_suffix)
-
 
         self.frontier_type = inputs.Text(
             **_create_input_kwargs_from_args_spec('frontier_type'))
