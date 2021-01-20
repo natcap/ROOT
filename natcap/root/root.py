@@ -24,6 +24,15 @@ from natcap.root import optimization
 
 LOGGER = logging.getLogger(__name__)
 
+try:
+    QApplication = QtGui.QApplication
+except AttributeError:
+    QApplication = QtWidgets.QApplication
+
+APP = QApplication.instance()
+if APP is None:
+    APP = QApplication([])  # pragma: no cover
+
 
 class RootInputError(Exception):
     pass
@@ -588,7 +597,7 @@ class Root(model.InVESTModel):
     def __init__(self):
         model.InVESTModel.__init__(
             self,
-            label=u'ROOT',
+            label='ROOT',
             target=execute,
             validator=validate,
             localdoc=u'../documentation/root.html'
@@ -708,8 +717,10 @@ if __name__ == '__main__':
 
     LOGGER.info('Constructing UI instance')
     ui = Root()
+
+    LOGGER.info('Adjusting window and setting up connections.')
     ui.run(quickrun=False)
 
     LOGGER.info('Entering event loop.')
-    _ = inputs.QT_APP.exec_()
+    _ = APP.exec_()
     LOGGER.info('Exiting.')
