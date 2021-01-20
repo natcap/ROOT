@@ -7,6 +7,7 @@ import collections
 import csv
 import uuid
 import json
+import multiprocessing
 from math import sqrt
 
 import pandas as pd
@@ -692,6 +693,8 @@ class Root(model.InVESTModel):
 
 
 if __name__ == '__main__':
+    multiprocessing.freeze_support()
+
     if '--test-imports' in sys.argv:
         sys.exit(0)
 
@@ -703,6 +706,10 @@ if __name__ == '__main__':
     # logging.basicConfig will by default write all streams to stderr.
     logging.basicConfig(level=log_level)
 
+    LOGGER.info('Constructing UI instance')
     ui = Root()
-    ui.run()
-    inputs.QT_APP.exec_()
+    ui.run(quickrun=False)
+
+    LOGGER.info('Entering event loop.')
+    _ = inputs.QT_APP.exec_()
+    LOGGER.info('Exiting.')
