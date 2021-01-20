@@ -695,6 +695,14 @@ if __name__ == '__main__':
     if '--test-imports' in sys.argv:
         sys.exit(0)
 
+    if '-v' in sys.argv:
+        log_level = logging.DEBUG
+    else:
+        log_level = logging.INFO
+
+    # logging.basicConfig will by default write all streams to stderr.
+    logging.basicConfig(level=log_level)
+
     ui = Root()
     ui.run()
     inputs.QT_APP.exec_()
