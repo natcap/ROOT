@@ -557,15 +557,12 @@ def validate(args, limit_to=None):
         args, ARGS_SPEC['args'], ARGS_SPEC['args_with_spatial_overlap'])
 
 
-def _create_input_kwargs_from_args_spec(
-        args_key, args_spec, validator):
+def _create_input_kwargs_from_args_spec(args_key):
     """Helper function to return kwargs for most model inputs.
     Args:
         args_key: The args key of the input from which a kwargs
             dict is being built.
-        args_spec: The ARGS_SPEC object to reference.
-        validator: The validator callable to provide to the ``validator`` kwarg
-            for the input.
+
     Returns:
         A dict of ``kwargs`` to explode to an ``inputs.GriddedInput``
         object at creation time.
@@ -573,9 +570,9 @@ def _create_input_kwargs_from_args_spec(
     model_spec = args_spec['args']
     return {
         'args_key': args_key,
-        'helptext': model_spec[args_key]['about'],
-        'label': model_spec[args_key]['name'],
-        'validator': validator,
+        'helptext': ARGS_SPEC[args_key]['about'],
+        'label': ARGS_SPEC[args_key]['name'],
+        'validator': validate,
     }
 
 
