@@ -14,6 +14,7 @@ import json
 import shapely.wkb
 import shapely.prepared
 
+import numpy
 from osgeo import ogr
 from osgeo import gdal
 from osgeo import osr
@@ -21,12 +22,11 @@ import numpy as np
 import pandas as pd
 
 import pygeoprocessing
-from . import arith_parser as ap
+from natcap.root import arith_parser as ap
 
 
 class RootPreprocessingError(Exception):
     pass
-
 
 
 def execute(args):
@@ -82,7 +82,7 @@ def execute(args):
                 indicates the side length of the grid.  If `hexagon`,
                 indicates minor axis length.
             csv_output_folder (string): destination folder for the output csvs.
-                Individual files will be named after their activity name. 
+                Individual files will be named after their activity name.
             baseline_file (string): name of target baseline file which is a
                 copy of `csv_filepath` except all marginal values are set to
                 0.
@@ -113,7 +113,11 @@ def execute(args):
     # Create merged activity mask
     mask_path_list = args['activity_masks'].values()
     all_activity_mask = os.path.join(args['workspace'], 'all_activity_mask.tif')
-    _create_overlapping_activity_mask(mask_path_list, all_activity_mask)
+    aligned_masks_dir = os.path.join(args['workspace'], 'aligned_masks')
+    if not os.path.exists(aligned_masks_dir):
+        os.makedirs(aligned_masks_dir)
+    _create_overlapping_activity_mask(mask_path_list, all_activity_mask,
+                                      aligned_masks_dir)
 
     # Creating or copying SDU shapefile
     if args['grid_type'] in ['square', 'hexagon']:
@@ -402,13 +406,13 @@ def _build_ip_table(
 
 def _add_combined_factors(data_table_path, combined_factors_dict):
     """
-    Opens data_table_path as dataframe, then for each name and list of factors in 
-    combined_factors_dict, creates a new column 'name' with the value multiplying 
+    Opens data_table_path as dataframe, then for each name and list of factors in
+    combined_factors_dict, creates a new column 'name' with the value multiplying
     the columns in the CF dict value.
-    
-    :param data_table_path: 
-    :param combined_factors_dict: 
-    :return: 
+
+    :param data_table_path:
+    :param combined_factors_dict:
+    :return:
     """
     df = pd.read_csv(data_table_path)
 
@@ -435,7 +439,8 @@ def _clean_negative_nodata_values(
         None.
     """
     target_nodata = np.finfo(np.float32).min
-    base_nodata = pygeoprocessing.get_nodata_from_uri(base_raster_path)
+    raster_info = pygeoprocessing.get_raster_info(base_raster_path)
+    base_nodata = raster_info['nodata'][0]
     if base_nodata > target_nodata / 10:
         print(
             "Base raster doesn't have a large nodata value; it's likely"
@@ -444,14 +449,14 @@ def _clean_negative_nodata_values(
                 base_raster_path, target_clean_raster_path)
         shutil.copy(base_raster_path, target_clean_raster_path)
 
-    pygeoprocessing.new_raster_from_base_uri(
-        base_raster_path, target_clean_raster_path, 'GTiff',
-        target_nodata, gdal.GDT_Float32)
+    pygeoprocessing.new_raster_from_base(
+        base_raster_path, target_clean_raster_path, gdal.GDT_Float32,
+        [target_nodata])
     target_raster = gdal.Open(target_clean_raster_path, gdal.GA_Update)
     target_band = target_raster.GetRasterBand(1)
 
     for block_offset, data_block in pygeoprocessing.iterblocks(
-            base_raster_path):
+            (base_raster_path, 1)):
         possible_nodata_mask = data_block < (target_nodata / 10)
         data_block[possible_nodata_mask] = target_nodata
         target_band.WriteArray(
@@ -497,9 +502,11 @@ def _aggregate_marginal_values(
         id_raster_path = id_raster_file.name
 
     id_nodata = -1
-    pygeoprocessing.new_raster_from_base_uri(
-        marginal_value_lookup[marginal_value_ids[0]], id_raster_path, 'GTiff',
-        id_nodata, gdal.GDT_Int32, fill_value=id_nodata)
+    pygeoprocessing.new_raster_from_base(
+        marginal_value_lookup[marginal_value_ids[0]], id_raster_path,
+        gdal.GDT_Int32, band_nodata_list=[id_nodata],
+        fill_value_list=[id_nodata])
+
     id_raster = gdal.Open(id_raster_path, gdal.GA_Update)
     mask_raster = gdal.Open(mask_raster_path)
     mask_band = mask_raster.GetRasterBand(1)
@@ -532,7 +539,8 @@ def _aggregate_marginal_values(
 
     # format of sdu_coverage is:
     # (sdu area, sdu pixel count, mask pixel count, mask pixel coverage in Ha)
-    for block_offset, id_block in pygeoprocessing.iterblocks(id_raster_path):
+    for block_offset, id_block in pygeoprocessing.iterblocks(
+            (id_raster_path, 1)):
         marginal_value_blocks = [
             band.ReadAsArray(**block_offset) for band in marginal_value_bands]
         mask_block = mask_band.ReadAsArray(**block_offset)
@@ -604,9 +612,10 @@ def _remove_nonoverlapping_sdus(vector_path, mask_raster_path, key_id_field):
     with tempfile.NamedTemporaryFile(dir='.', delete=False) as id_raster_file:
         id_raster_path = id_raster_file.name
 
-    pygeoprocessing.new_raster_from_base_uri(
-        mask_raster_path, id_raster_path, 'GTiff', -1,
-        gdal.GDT_Int32, fill_value=-1)
+    pygeoprocessing.new_raster_from_base(
+        mask_raster_path, id_raster_path, gdal.GDT_Int32,
+        band_nodata_list=[-1], fill_value_list=[-1])
+
     id_raster = gdal.Open(id_raster_path, gdal.GA_Update)
 
     tmp_vector_dir = tempfile.mkdtemp()
@@ -621,10 +630,11 @@ def _remove_nonoverlapping_sdus(vector_path, mask_raster_path, key_id_field):
     gdal.RasterizeLayer(
         id_raster, [1], layer, options=['ATTRIBUTE=%s' % key_id_field])
     id_band = id_raster.GetRasterBand(1)
-    mask_nodata = pygeoprocessing.get_nodata_from_uri(mask_raster_path)
+    mask_nodata = pygeoprocessing.get_raster_info(
+        mask_raster_path)['nodata'][0]
     covered_ids = set()
     for mask_offset, mask_block in pygeoprocessing.iterblocks(
-            mask_raster_path):
+            (mask_raster_path, 1)):
         id_block = id_band.ReadAsArray(**mask_offset)
         valid_mask = mask_block != mask_nodata
         covered_ids.update(np.unique(id_block[valid_mask]))
@@ -875,9 +885,9 @@ def _assert_inputs_same_size_and_srs(raster_path_list, shapefile_path_list):
 def _copy_sdu_file(source, dest):
     """
     Copies the shapefile, renaming it to sdu_grid.shp
-    :param source: 
-    :param dest: 
-    :return: 
+    :param source:
+    :param dest:
+    :return:
     """
     shp_base = os.path.splitext(source)[0]
     shp_components = glob.glob(shp_base+'.*')
@@ -889,34 +899,52 @@ def _copy_sdu_file(source, dest):
 
 
 def _create_overlapping_activity_mask(mask_path_list, target_file,
+                                      aligned_paths_directory,
                                       reference_mask=0):
 
     # TODO: get nodata vals from each mask_path, make comparison against those instead of np.nan
     # need them as closure in this function, zip with vals to line up
 
-    mask_nodatas = [pygeoprocessing.get_nodata_from_uri(mask_path) for mask_path in mask_path_list]
-    ref_path = mask_path_list[reference_mask]
-    ref_dtype = pygeoprocessing.get_datatype_from_uri(ref_path)
-    ref_nodata = pygeoprocessing.get_nodata_from_uri(ref_path)
-    pixel_size = pygeoprocessing.get_cell_size_from_uri(ref_path)
+    mask_nodatas = [
+        pygeoprocessing.get_raster_info(raster_path)['nodata'][0] for
+        raster_path in mask_path_list]
 
-    def pixel_op(*vals):
-        if all([x == nodata for x, nodata in zip(vals, mask_nodatas)]):
-            return ref_nodata
-        else:
-            return 1
+    ref_info = pygeoprocessing.get_raster_info(mask_path_list[reference_mask])
+    ref_nodata = ref_info['nodata'][0]
+    pixel_size = ref_info['pixel_size']
 
-    pygeoprocessing.vectorize_datasets(
-        mask_path_list,
-        pixel_op,
+    # Align stack to the reference dataset's bounding box using
+    # nearest-neighbor interpolation.
+    aligned_mask_paths = [
+        os.path.join(aligned_paths_directory, f'aligned_mask_{index}.tif')
+        for index in range(len(mask_path_list))]
+    pygeoprocessing.align_and_resize_raster_stack(
+        mask_path_list, aligned_mask_paths, ['near']*len(mask_path_list),
+        ref_info['pixel_size'], bounding_box_mode=ref_info['bounding_box'])
+
+    def all_pixels_have_value(*vals):
+        pixels_with_complete_overlap = numpy.array(
+            vals[0].shape, dtype=numpy.bool)
+        pixels_with_complete_overlap[:] = 1  # assume all valid
+
+        for index, array in enumerate(vals):
+            # numpy.isclose will work for floating-point and integer rasters,
+            # direct equality comparison will not.
+            pixels_with_complete_overlap  &= numpy.isclose(
+                array, mask_nodatas[index])
+
+        output_array = numpy.full(pixels_with_complete_overlap.shape,
+                                  ref_nodata, dtype=ref_info['numpy_type'])
+        output_array[pixels_with_complete_overlap] = 1
+
+        return pixels_with_complete_overlap
+
+    pygeoprocessing.raster_calculator(
+        [(path, 1) for path in aligned_mask_paths],
+        all_pixels_have_value,
         target_file,
-        ref_dtype,
-        ref_nodata,
-        pixel_size,
-        bounding_box_mode='dataset',
-        dataset_to_align_index=reference_mask,
-        dataset_to_bound_index=reference_mask,
-    )
+        ref_info['datatype'],
+        ref_nodata)
 
 
 if __name__ == '__main__':

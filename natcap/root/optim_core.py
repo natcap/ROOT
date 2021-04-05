@@ -23,7 +23,8 @@ from collections import namedtuple
 import cvxpy as cvx
 import pandas as pd
 import numpy as np
-from . import arith_parser as ap
+
+from natcap.root import arith_parser as ap
 
 
 """
@@ -65,7 +66,7 @@ class Data(object):
 
     Specific data tables can be referenced by ``data[factor_name]``, similar to dictionary reference
     Columns for particular options can be referenced by ``data[factor_name, option_name]``
-    
+
     """
 
     def __init__(self, data_dir, sdu_id_col, data_cols=None,
@@ -83,7 +84,7 @@ class Data(object):
         * files_by_factor: if True, treats separate files as corresponding to factors with one column per option.
             Otherwise treats files as corresponding to options with one column per factor
         * file_glob_str: if None, loads files in data_dir matching '*.csv', otherwise will match given pattern
-        
+
         """
 
         # save the calling arguments
@@ -195,14 +196,14 @@ class Data(object):
 
     def factor_values_for_solution(self, sol, varnames=None):
         """
-        Returns a dictionary containing the summed values for each factor 
-        in data. keys are factornames, values are the sums. 
-        
+        Returns a dictionary containing the summed values for each factor
+        in data. keys are factornames, values are the sums.
+
         Caller can subset which cols to return with varnames list.
 
-        :param sol: real [0 - 1] valued array of size (n_parcels, n_opts) 
+        :param sol: real [0 - 1] valued array of size (n_parcels, n_opts)
         :param varnames: optional list of factors to evaluate
-        :return: 
+        :return:
         """
 
         results = dict()
@@ -235,7 +236,7 @@ class Problem(object):
     * 'factor_by_option_constraints': [ (factorname, option, type, value), ... ] applies the constraint
         only to the listed option.
 
-        deprecated: 
+        deprecated:
             'targets': {factorname: target} for each factor with a target
             'target_types': {factorname: '<', '>', or '=' } (inequals will allow ==)
 
@@ -251,14 +252,14 @@ class Problem(object):
                 list can be selected regardless of selection in the listed options, or the other
                 non-listed options
             * list of lists: creates several sets of mutually exclusive options, but can choose one option
-                from each set. Options not included in a list can be selected or not independent of 
+                from each set. Options not included in a list can be selected or not independent of
                 selection in the mutually-exlusive sets.
         'normalize_objectives': True or False (assumed False if arg not present)
             this will rescale all arguments to be between 0 and 1
             'flatten_objectives': True or False (assumed False if arg not present)
             this replaces objective values with their relative rank
             NOTE: I think this might produce solutions that aren't actually
-            on the frontier. 
+            on the frontier.
 
 
     """
@@ -266,7 +267,7 @@ class Problem(object):
     def __init__(self, data, problem_def, solver=None):
         """
         Problem creation function
-        
+
         after the problem has been run, the results are attainable as:
 
         * :attr:`p.solution`: nsdus x nopts numpy array with values between 0 and 1
@@ -491,7 +492,7 @@ class Problem(object):
 
         :param nunits:
         :param nopts:
-        :param opt_set: 
+        :param opt_set:
         """
         nvars = nunits * nopts
 
@@ -665,7 +666,7 @@ class Analysis(object):
         """
         if not os.path.isdir(folder):
             os.makedirs(folder)
-        
+
         summed_choices = self.summed_choices()
         d = {
             self.data.sdu_id_col: list(self.data.sdu_ids),
@@ -731,7 +732,7 @@ class ConfigList(Analysis):
 class NDimFrontier(Analysis):
     """Monte Carlo sampling of N-dimensional frontier.
 
-    This class generates random uniformly distributed weight vectors and 
+    This class generates random uniformly distributed weight vectors and
     runs the optimization for each of these.
 
     config should be a dict structured as follows:
@@ -747,8 +748,8 @@ class NDimFrontier(Analysis):
         'targettypes': {factornames}: '<', '>', or '=' (inequals will allow ==)
 
 
-    example of frontier_def coming from root_ui: 
-    {   
+    example of frontier_def coming from root_ui:
+    {
         'analysis_type': u'n_dim_frontier',
         'flatten_objectives': False,
         'normalize_objectives': True,
@@ -780,9 +781,9 @@ class NDimFrontier(Analysis):
     def _make_weight_vectors(npts, ndims):
         """
 
-        :param npts: 
-        :param ndims: 
-        :return: 
+        :param npts:
+        :param ndims:
+        :return:
         """
         pts = np.random.multivariate_normal(np.zeros(ndims), np.identity(ndims), npts)
         norm_pts = np.abs(np.array([p / np.linalg.norm(p) for p in pts]))

@@ -1,0 +1,27 @@
+name: root-env  # There's a github actions warning if this isn't defined.
+channels:
+    - conda-forge
+    - defaults
+dependencies:
+    - python=3.7
+    - make
+    - pandas
+    - numexpr>=2.4.6
+    - nomkl
+    - numpy
+    - cvxpy
+    - Shapely
+    - requests
+    - pygeoprocessing
+    - pyinstaller==4.1
+    - setuptools
+    - toml
+    - setuptools_scm
+    - psutil
+    - cython
+    - wheel
+    - rtree>=0.8.2,!=0.9.1,<=0.9.4  # For pyinstaller compatibility.  See natcap/invest#439
+    - pip
+    - pip:
+        # UI requirements work more reliably when installed via pip.
+        - natcap.invest[ui]>=3.9

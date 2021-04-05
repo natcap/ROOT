@@ -4,7 +4,7 @@ import json
 import copy
 import pprint
 
-from . import optim_core as opco
+from natcap.root import optim_core as opco
 
 
 def execute(config_file_or_dict):
@@ -162,4 +162,3 @@ def get_header_list(filename, delimiter=','):
         header_str = f.readline().strip()
         header_list = header_str.split(delimiter)
     return header_list
-

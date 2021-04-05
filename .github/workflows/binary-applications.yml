@@ -1,0 +1,140 @@
+name: ROOT Binaries, Tests
+
+on:
+    push:
+    pull_request:
+
+jobs:
+    check-syntax-errors:
+        name: "Check for syntax errors"
+        runs-on: ubuntu-20.04
+        steps:
+            - uses: actions/checkout@v2
+
+            - name: Set up python 3.7
+              uses: actions/setup-python@v1
+              with:
+                  python-version: 3.7
+
+            - name: Set up environment
+              run: python -m pip install --upgrade flake8
+
+            - name: Lint with flake8
+              run: |
+                # stop the build if there are Python syntax errors or undefined names
+                python -m flake8 natcap --count --select=E9,F63,F7,F82 --show-source --statistics
+                # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+                python -m flake8 natcap --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    build-binaries:
+        name: "Build binaries"
+        needs: check-syntax-errors
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [windows-latest, macos-latest]
+        env:
+            PYTHON_VERSION: 3.7
+            PYTHON_ARCH: x64
+        steps:
+            - uses: actions/checkout@v2
+              with:
+                  fetch-depth: 0  # fetch complete history
+
+            - name: Fetch git tags
+              run: git fetch origin +refs/tags/*:refs/tags/*
+
+            - name: Set up conda cache
+              uses: actions/cache@v2
+              env:
+                  # Increment to reset cache if environment.yml hasn't changed
+                  CACHE_NUMBER: 0
+              with:
+                  path: ~/conda_pkgs_dir
+                  key:
+                      ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{hashFiles('environment.yml') }}
+                  restore-keys:
+                      ${{ runner.os }}-conda
+
+            - name: Setup conda environment
+              uses: conda-incubator/setup-miniconda@v2
+              with:
+                  activate-environment: root-env
+                  auto-update-conda: true
+                  python-version: ${{ env.PYTHON_VERSION }}
+                  environment-file: environment.yml
+                  use-only-tar-bz2: true  # Needed for dependency caching
+
+            - name: Install extra packages on Windows
+              if: ${{ runner.os == 'Windows' }}
+              shell: powershell
+              run: |
+                  choco install vcredist140
+                  refreshenv
+
+            - name: Build binaries
+              timeout-minutes: 20  # Encountered some probably-infinite loops around the 10 minute mark.
+              shell: bash -l {0}
+              run: |
+                  pip install "scipy>=1.5.0"  # scipy~=1.4 has an import issue with _ufuncs.
+                  pip install --no-deps .  # Install root as a wheel
+                  make binaries
+
+            - name: Upload dist directory on failure
+              if: failure()
+              uses: actions/upload-artifact@v2
+              with:
+                  name: dist-${{ github.sha }}-${{ runner.os }}
+                  path: dist
+
+            - name: Upload installer artifact
+              if: always()
+              uses: actions/upload-artifact@v2
+              with:
+                  name: ROOT-application-${{ runner.os }}
+                  path: dist/*.zip
+
+    run-tests:
+        name: Execute Tests
+        runs-on: ${{ matrix.os }}
+        needs: check-syntax-errors
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [windows-latest, macos-latest]
+        steps:
+            - uses: actions/checkout@v2
+              with:
+                  fetch-depth: 0  # fetch complete history
+
+            - name: Fetch git tags
+              run: git fetch origin +refs/tags/*:refs/tags/*
+
+            - name: Set up conda cache
+              uses: actions/cache@v2
+              env:
+                  # Increment to reset cache if environment.yml hasn't changed
+                  CACHE_NUMBER: 0
+              with:
+                  path: ~/conda_pkgs_dir
+                  key:
+                      ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{hashFiles('environment.yml') }}
+                  restore-keys:
+                      ${{ runner.os }}-conda
+
+            - name: Setup conda environment
+              uses: conda-incubator/setup-miniconda@v2
+              with:
+                  activate-environment: root-env
+                  auto-update-conda: true
+                  python-version: ${{ env.PYTHON_VERSION }}
+                  environment-file: environment.yml
+                  use-only-tar-bz2: true  # Needed for dependency caching
+
+            - name: Run tests
+              shell: bash -l {0}
+              run: |
+                  pip install pytest
+                  pip install --no-deps .  # Install root as a wheel
+                  pytest tests

@@ -2,37 +2,29 @@
 import os
 import sys
 import shutil
-from PyInstaller.compat import is_win
+import glob
+import itertools
+from PyInstaller.compat import is_win, is_darwin
 
 block_cipher = None
 
-path_extension = []
-release_env_dir = os.path.abspath(os.path.join('..', 'root_env'))
-if is_win:
-    env_path_base = os.path.join(release_env_dir, 'lib')
-else:
-    env_path_base = os.path.join(release_env_dir, 'lib', 'python2.7')
+path_extension = ['rootcode']
+conda_env = os.environ['CONDA_PREFIX']
 
-# We're in a virtualenv if the expected env lib dir exists AND the python
-# executable is within the release env dir.
-# NOTE: Pyinstaller seems to pick up packages within the global site-packages
-# just fine, so we don't need to modify the pathext when we're not in a
-# virtualenv.
-if os.path.exists(env_path_base) and sys.executable.startswith(release_env_dir):
-    env_path_base = os.path.abspath(env_path_base)
-    path_extension.insert(0, env_path_base)
-    path_extension.insert(0, os.path.join(env_path_base, 'site-packages'))
+if is_win:
+    proj_datas = ((os.path.join(conda_env, 'Library/share/proj'), 'proj'))
+else:
+    proj_datas = ((os.path.join(conda_env, 'share/proj'), 'proj'))
 
 # Add the root_ui directory to the extended path.
 path_extension.insert(0, os.path.abspath('..'))
 
-a = Analysis([os.path.join('..', 'root.py')],
+a = Analysis([os.path.join(os.getcwd(), 'natcap', 'root', 'root.py')],  # Assume we're building from the project root
              pathex=path_extension,
              binaries=None,
-             datas=[('qt.conf', '.')],
+             datas=[('qt.conf', '.'), proj_datas],
              hiddenimports=[
                 'pygeoprocessing',
-                'root',
                 'distutils',
                 'distutils.dist',
                 'distutils.version',
@@ -45,6 +37,9 @@ a = Analysis([os.path.join('..', 'root.py')],
                 'rtree',
                 'pandas._libs.skiplist',
                 'scipy._lib.messagestream',
+                'scipy.special.cython_special',
+                'scipy.spatial.transform._rotation_groups',
+                'cmath',
              ],
              hookspath=[os.path.join(os.getcwd(), 'exe', 'hooks')],
              runtime_hooks=None,
@@ -54,6 +49,39 @@ a = Analysis([os.path.join('..', 'root.py')],
              cipher=block_cipher)
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
+
+# Create the executable file.
+if is_darwin:
+    # add rtree, shapely, proj dependency dynamic libraries from conda
+    # environment.
+    # These libraries are specifically included here because they don't seem to
+    # be picked up by the built-in hooks and have been known to interfere with
+    # the pyinstaller installation when running on a homebrew-enabled system.
+    # See https://github.com/natcap/invest/issues/10.
+    a.binaries += [
+        (os.path.basename(name), name, 'BINARY') for name in
+        itertools.chain(
+            glob.glob(os.path.join(conda_env, 'lib', 'libspatialindex*.dylib')),
+            glob.glob(os.path.join(conda_env, 'lib', 'libgeos*.dylib')),
+            glob.glob(os.path.join(conda_env, 'lib', 'libproj*.dylib')),
+        )
+    ]
+elif is_win:
+    # Adapted from
+    # https://shanetully.com/2013/08/cross-platform-deployment-of-python-applications-with-pyinstaller/
+    # Supposed to gather the mscvr/p DLLs from the local system before
+    # packaging.  Skirts the issue of us needing to keep them under version
+    # control.
+    a.binaries += [
+        ('msvcp90.dll', 'C:\\Windows\\System32\\msvcp90.dll', 'BINARY'),
+        ('msvcr90.dll', 'C:\\Windows\\System32\\msvcr90.dll', 'BINARY')
+    ]
+
+    # add rtree dependency dynamic libraries from conda environment
+    a.binaries += [
+        (os.path.basename(name), name, 'BINARY') for name in
+        glob.glob(os.path.join(conda_env, 'Library/bin/spatialindex*.dll'))]
+
 exe = EXE(pyz,
           a.scripts,
           exclude_binaries=True,
@@ -61,7 +89,7 @@ exe = EXE(pyz,
           debug=False,
           strip=None,
           upx=True,
-          console=True )
+          console=True)
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
@@ -69,10 +97,3 @@ coll = COLLECT(exe,
                strip=None,
                upx=True,
                name='root')
-
-#if is_win:
-#    # For some reason, the _gdal dylib isn't copied to the correct name.
-#    # Copy-pasting like this feels like a hack, but it should work ok.
-#    bindir = os.path.join('dist', 'root-x64', 'root')
-#    shutil.copyfile(os.path.join(bindir, 'osgeo._gdal.pyd'),
-#                    os.path.join(bindir, '_gdal.pyd'))

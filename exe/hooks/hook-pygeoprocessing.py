@@ -1,4 +1,5 @@
-from PyInstaller.utils.hooks import collect_data_files, copy_metadata
+from PyInstaller.utils.hooks import (
+    collect_submodules, collect_data_files, copy_metadata)
 
 datas = collect_data_files('pygeoprocessing') + copy_metadata('pygeoprocessing')
-hiddenimports = ['pygeoprocessing.version']
+hiddenimports = collect_submodules('pygeoprocessing')
