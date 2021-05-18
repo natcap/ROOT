@@ -12,3 +12,4 @@ qtawesome
 Shapely
 requests
 pygeoprocessing
+gdal<3.3.0  # GDAL won't currently import with GDAL 3.3.0
