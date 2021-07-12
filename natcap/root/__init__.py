@@ -1,5 +1,7 @@
 import logging
 
+import pkg_resources
+
 LOGGER = logging.getLogger('natcap.root')
 LOGGER.addHandler(logging.NullHandler())
 

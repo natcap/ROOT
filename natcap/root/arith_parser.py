@@ -3,7 +3,6 @@
 
 import operator
 import numpy as np
-import pandas as pd
 
 
 FUNCTIONS = ['abs', 'log', 'sqrt', 'sum', 'min', 'max']

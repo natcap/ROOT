@@ -3,23 +3,17 @@
 import os
 import sys
 import logging
-import collections
 import csv
-import uuid
-import json
 import multiprocessing
 from math import sqrt
 
 import pandas as pd
 from osgeo import ogr
-from osgeo import gdal
 import PySide2  # pragma: no cover
 from qtpy import QtWidgets
 from qtpy import QtGui
 from natcap.invest.ui import model, inputs
 from natcap.invest import validation
-
-sys.path.extend([os.getcwd()])
 
 from natcap.root import __version__
 from natcap.root import preprocessing
@@ -571,7 +565,6 @@ def validate(args, limit_to=None):
         args, ARGS_SPEC['args'], ARGS_SPEC['args_with_spatial_overlap'])
 
     invalid_keys = validation.get_invalid_keys(validation_warnings)
-    sufficient_keys = validation.get_sufficient_keys(args)
 
     if 'spatial_decision_unit_shape' not in invalid_keys:
         sdu_valid = True
