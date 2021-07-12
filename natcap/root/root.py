@@ -298,7 +298,7 @@ def parse_args(ui_args):
         # TODO: this should be optional, too.
         combined_factors = {}
         if 'combined_factor_table_path' in ui_args and os.path.isfile(ui_args['combined_factor_table_path']):
-            with open(ui_args['combined_factor_table_path'], 'rU') as tablefile:
+            with open(ui_args['combined_factor_table_path'], 'r') as tablefile:
                 reader = csv.DictReader(tablefile)
                 for row in reader:
                     combined_factors[row['name']] = [x.strip() for x in row['factors'].split(' ')]
@@ -383,7 +383,7 @@ def _process_raster_table(filename):
             self.filepath = filepath
             self.raster_lookup = {}
             self.factor_names = []
-            with open(filename, 'rU') as tablefile:
+            with open(filename, 'r') as tablefile:
                 header = tablefile.readline()
                 header_fields = [f.strip() for f in header.split(',')]
                 assert header_fields[0] == 'name'
@@ -424,7 +424,7 @@ def _process_objectives_table(ui_args, root_args):
         optimization_objectives = {}
         min_choices = ['Minimize', 'minimize', 'Min', 'min', 'Minimum', 'minimum']
         max_choices = ['Maximize', 'maximize', 'Max', 'max', 'Maximum', 'maximum']
-        with open(ui_args['objectives_table_path'], 'rU') as tablefile:
+        with open(ui_args['objectives_table_path'], 'r') as tablefile:
             var_names = tablefile.readline().strip().split(',')
             minmax = tablefile.readline().strip().split(',')
             for v, mm in zip(var_names, minmax):
