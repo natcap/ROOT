@@ -17,10 +17,11 @@ import PySide2  # pragma: no cover
 from qtpy import QtWidgets
 from qtpy import QtGui
 from natcap.invest.ui import model, inputs
+from natcap.invest import validation
 
 sys.path.extend([os.getcwd()])
 
-from natcap.invest import validation
+from natcap.root import __version__
 from natcap.root import preprocessing
 from natcap.root import postprocessing
 from natcap.root import optimization
@@ -210,7 +211,7 @@ def execute(args):
     """root.
 
     """
-
+    LOGGER.info(f'Running ROOT version {__version__}')
     internal_args = parse_args(args)
 
     # with open(os.path.join(internal_args['workspace'], 'root_args.json'), 'w') as root_args_file:
