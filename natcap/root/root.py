@@ -111,7 +111,7 @@ ARGS_SPEC = {
             'name': 'Activity Mask Raster',
         },
         'spatial_decision_unit_shape': {
-            'type': 'vector',
+            'type': 'freestyle_string',
             'required': True,
             'about': (
                 "Determines the shape of the SDUs used to aggregate "
@@ -567,8 +567,27 @@ def validate_objectives_and_constraints_tables(obj_table_file, cons_table_file, 
 
 
 def validate(args, limit_to=None):
-    return validation.validate(
+    validation_warnings = validation.validate(
         args, ARGS_SPEC['args'], ARGS_SPEC['args_with_spatial_overlap'])
+
+    invalid_keys = validation.get_invalid_keys(validation_warnings)
+    sufficient_keys = validation.get_sufficient_keys(args)
+
+    if 'spatial_decision_unit_shape' not in invalid_keys:
+        sdu_valid = True
+        try:
+            if not validate_sdu_shape_arg(args['spatial_decision_unit_shape']):
+                sdu_valid = False
+        except RootInputError:
+            sdu_valid = False
+
+        if not sdu_valid:
+            validation_warnings.append(
+                (['spatial_decision_unit_shape'],
+                 ('Spatial Decision Unit Shape must be "square", "hexagon", '
+                  'or a path to a vector')))
+
+    return validation_warnings
 
 
 def _create_input_kwargs_from_args_spec(args_key, validate=True):
