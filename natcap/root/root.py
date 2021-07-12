@@ -606,6 +606,13 @@ class Root(model.InVESTModel):
             localdoc=u'../documentation/root.html'
         )
 
+        # Explicitly setting the default workspace because the InVEST UI's
+        # approach relies on self.target.__module__, which isn't reliable when
+        # execute is in the same script as the launcher.  In this case, the
+        # module name is __main__.  Technically true, but not user-readable.
+        self.workspace.set_value(os.path.normpath(
+            os.path.expanduser('~/Documents/root_workspace')))
+
         self.preprocessing_container = inputs.Container(
             args_key=u'preprocessing_container',
             expandable=False,
