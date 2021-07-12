@@ -255,11 +255,11 @@ def parse_args(ui_args):
 
         root_args['mask_raster'] = ui_args['potential_conversion_mask_path']
         root_args['grid_type'] = ui_args['spatial_decision_unit_shape']
-        cell_area = ui_args['spatial_decision_unit_area'] * 10000
+        cell_area = float(ui_args['spatial_decision_unit_area']) * 10000
         if root_args['grid_type'] == 'square':
             root_args['cell_size'] = sqrt(cell_area)
         elif root_args['grid_type'] == 'hexagon':
-            a = sqrt( (2*cell_area) / (3*sqrt(3)) )
+            a = sqrt((2*cell_area) / (3*sqrt(3)))
             root_args['cell_size'] = 2 * a
 
         root_args['csv_output_folder'] = os.path.join(root_args['workspace'], 'sdu_value_tables')
