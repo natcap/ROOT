@@ -119,7 +119,7 @@ ARGS_SPEC = {
         },
         'spatial_decision_unit_area': {
             'type': 'number',
-            'required': True,
+            'required': False,
             'about': (
                 "Area of each grid cell in the constructed grid. "
                 "Measured in hectares (1 ha = 10,000m^2). This is "
