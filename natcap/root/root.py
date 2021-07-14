@@ -9,11 +9,13 @@ from math import sqrt
 
 import pandas as pd
 from osgeo import ogr
+from osgeo import gdal
 import PySide2  # pragma: no cover
 from qtpy import QtWidgets
 from qtpy import QtGui
 from natcap.invest.ui import model, inputs
 from natcap.invest import validation
+import pygeoprocessing
 
 from natcap.root import __version__
 from natcap.root import preprocessing
@@ -245,6 +247,19 @@ def parse_args(ui_args):
     root_args['sdu_id_col'] = 'SDU_ID'
 
     if ui_args['do_preprocessing']:
+
+        # TODO: Remove this raster_calculator call.
+        # This raster_calculator_call is just to try and trigger the proj.db
+        # issue on Windows in the binary build.  It can and should be removed
+        # once the issue at https://github.com/natcap/ROOT/issues/4 is
+        # resolved.
+        def _foo(array):
+            return array
+
+        pygeoprocessing.raster_calculator(
+            [(ui_args['potential_conversion_mask_path'], 1)],
+            _foo, os.path.join(ui_args['workspace_dir'], 'foo.tif'),
+            gdal.GDT_Float32, -1)
 
         validate_raster_input_table(ui_args['marginal_raster_table_path'])
         validate_shapefile_input_table(ui_args['serviceshed_shapefiles_table'])
