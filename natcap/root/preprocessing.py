@@ -109,19 +109,6 @@ def execute(args):
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
 
-    # TODO: Remove this raster_calculator call.
-    # This raster_calculator_call is just to try and trigger the proj.db
-    # issue on Windows in the binary build.  It can and should be removed
-    # once the issue at https://github.com/natcap/ROOT/issues/4 is
-    # resolved.
-    def _foo(array):
-        return array
-
-    pygeoprocessing.raster_calculator(
-       [(args['mask_raster'], 1)],
-        _foo, os.path.join(args['workspace'], 'foo.tif'),
-        gdal.GDT_Float32, -1)
-
     # Create merged activity mask
     mask_path_list = args['activity_masks'].values()
     all_activity_mask = os.path.join(args['workspace'], 'all_activity_mask.tif')
