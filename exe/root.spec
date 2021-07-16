@@ -42,7 +42,8 @@ a = Analysis([os.path.join(os.getcwd(), 'natcap', 'root', 'root.py')],  # Assume
                 'cmath',
              ],
              hookspath=[os.path.join(os.getcwd(), 'exe', 'hooks')],
-             runtime_hooks=None,
+             runtime_hooks=os.path.join(
+                os.getcwd(), 'exe', 'hooks', 'rthook.py'),
              excludes=None,
              win_no_prefer_redirects=None,
              win_private_assemblies=None,
