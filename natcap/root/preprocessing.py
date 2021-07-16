@@ -118,10 +118,9 @@ def execute(args):
         return array
 
     pygeoprocessing.raster_calculator(
-       [(args['potential_conversion_mask_path'], 1)],
+       [(args['mask_raster'], 1)],
         _foo, os.path.join(args['workspace_dir'], 'foo.tif'),
         gdal.GDT_Float32, -1)
-
 
     # Create merged activity mask
     mask_path_list = args['activity_masks'].values()
