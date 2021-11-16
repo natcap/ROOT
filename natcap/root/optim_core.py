@@ -13,11 +13,8 @@ These are:
 
 import os
 import copy
-import sys
 import glob
 import json
-import datetime
-import pprint
 import warnings
 from collections import namedtuple
 import cvxpy as cvx

@@ -1,4 +1,4 @@
-pyinstaller==3.5
+pyinstaller>=4.1  # match natcap.invest==3.9.0
 setuptools_scm
 cython
 numpy

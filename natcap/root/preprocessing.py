@@ -10,7 +10,6 @@ import math
 import tempfile
 import collections
 import glob
-import json
 import shapely.wkb
 import shapely.prepared
 
@@ -240,7 +239,6 @@ def _serviceshed_coverage(
     result = collections.defaultdict(
         lambda: collections.defaultdict(
             lambda: [0.0, collections.defaultdict(float)]))
-
 
     for serviceshed_id, serviceshed_path in zip(
             serviceshed_id_list, serviceshed_path_list):
@@ -911,7 +909,6 @@ def _create_overlapping_activity_mask(mask_path_list, target_file,
 
     ref_info = pygeoprocessing.get_raster_info(mask_path_list[reference_mask])
     ref_nodata = ref_info['nodata'][0]
-    pixel_size = ref_info['pixel_size']
 
     # Align stack to the reference dataset's bounding box using
     # nearest-neighbor interpolation.
@@ -930,7 +927,7 @@ def _create_overlapping_activity_mask(mask_path_list, target_file,
         for index, array in enumerate(vals):
             # numpy.isclose will work for floating-point and integer rasters,
             # direct equality comparison will not.
-            pixels_with_complete_overlap  &= numpy.isclose(
+            pixels_with_complete_overlap &= numpy.isclose(
                 array, mask_nodatas[index])
 
         output_array = numpy.full(pixels_with_complete_overlap.shape,

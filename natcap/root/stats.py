@@ -1,12 +1,8 @@
-import sys
 import os
 import glob
-import json
-import copy
 
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
 
 def load_sols(opt_folder, cols, sol_file_str='solution_*.csv'):
@@ -111,15 +107,3 @@ def bootstrap_mean_variance_from_sample(amap_sample):
 def bootstrap_mean_variance_from_sols(sols, ppm, nsamps):
     sample = make_agreement_map_sample(sols, ppm, nsamps)
     return bootstrap_mean_variance_from_sample(sample)
-
-
-
-
-
-
-
-
-
-
-
-
