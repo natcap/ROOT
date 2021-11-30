@@ -110,7 +110,7 @@ def execute(args):
             os.makedirs(dir_path)
 
     # Create merged activity mask
-    mask_path_list = args['activity_masks'].values()
+    mask_path_list = list(args['activity_masks'].values())
     all_activity_mask = os.path.join(args['workspace'], 'all_activity_mask.tif')
     aligned_masks_dir = os.path.join(args['workspace'], 'aligned_masks')
     if not os.path.exists(aligned_masks_dir):
@@ -232,7 +232,7 @@ def _serviceshed_coverage(
     sdu_lookup = {}
     for sdu_feature in sdu_layer:
         sdu_lookup[sdu_feature.GetField(str(sdu_id_fieldname))] = (
-            shapely.wkb.loads(sdu_feature.GetGeometryRef().ExportToWkb()))
+            shapely.wkb.loads(bytes(sdu_feature.GetGeometryRef().ExportToWkb())))
     sdu_layer = None
     sdu_vector = None
 
@@ -249,7 +249,7 @@ def _serviceshed_coverage(
             for serviceshed_feature in serviceshed_layer:
                 serviceshed_geometry = serviceshed_feature.GetGeometryRef()
                 serviceshed_polygon = shapely.wkb.loads(
-                    serviceshed_geometry.ExportToWkb())
+                    bytes(serviceshed_geometry.ExportToWkb()))
                 prep_serviceshed_polygon = shapely.prepared.prep(
                     serviceshed_polygon)
                 for sdu_id, sdu_poly in sdu_lookup.items():
@@ -342,13 +342,13 @@ def _build_ip_table(
         # This gets the "first" value in the dict, then the keys of that dict
         # also makes sense to sort them so it's easy to navigate the CSV.
         marginal_value_ids = sorted(
-            marginal_value_lookup.values().next()[1].keys())
+            list(marginal_value_lookup.values())[0][1].keys())
         n_mv_ids = len(marginal_value_ids)
         target_ip_file.write((",%s" * n_mv_ids) % tuple(marginal_value_ids))
         # target_ip_file.write(
         #     (",%s_perHA" * n_mv_ids) % tuple(marginal_value_ids))
         if sdu_serviceshed_coverage is not None:
-            first_serviceshed_lookup = sdu_serviceshed_coverage.values().next()
+            first_serviceshed_lookup = list(sdu_serviceshed_coverage.values())[0]
         else:
             first_serviceshed_lookup = {}
         serviceshed_ids = sorted(first_serviceshed_lookup.keys())
@@ -443,8 +443,8 @@ def _clean_negative_nodata_values(
         print(
             "Base raster doesn't have a large nodata value; it's likely"
             " not one of the corrupt float32.min rasters we were dealing"
-            " with.  Copying %s to %s without modification.") % (
-                base_raster_path, target_clean_raster_path)
+            " with.  Copying %s to %s without modification." % (
+                base_raster_path, target_clean_raster_path))
         shutil.copy(base_raster_path, target_clean_raster_path)
 
     pygeoprocessing.new_raster_from_base(
@@ -501,7 +501,7 @@ def _aggregate_marginal_values(
 
     id_nodata = -1
     pygeoprocessing.new_raster_from_base(
-        marginal_value_lookup[marginal_value_ids[0]], id_raster_path,
+        marginal_value_lookup[list(marginal_value_ids)[0]], id_raster_path,
         gdal.GDT_Int32, band_nodata_list=[id_nodata],
         fill_value_list=[id_nodata])
 
@@ -908,6 +908,7 @@ def _create_overlapping_activity_mask(mask_path_list, target_file,
         raster_path in mask_path_list]
 
     ref_info = pygeoprocessing.get_raster_info(mask_path_list[reference_mask])
+    # ref_info = pygeoprocessing.get_raster_info(mask_path_list[reference_mask])
     ref_nodata = ref_info['nodata'][0]
 
     # Align stack to the reference dataset's bounding box using
@@ -920,11 +921,14 @@ def _create_overlapping_activity_mask(mask_path_list, target_file,
         ref_info['pixel_size'], bounding_box_mode=ref_info['bounding_box'])
 
     def all_pixels_have_value(*vals):
-        pixels_with_complete_overlap = numpy.array(
-            vals[0].shape, dtype=numpy.bool)
-        pixels_with_complete_overlap[:] = 1  # assume all valid
+        pixels_with_complete_overlap = numpy.ones(vals[0].shape, dtype=numpy.bool)
+        # pixels_with_complete_overlap[:] = 1  # assume all valid
 
+        print(pixels_with_complete_overlap.shape)
+        print(vals)
         for index, array in enumerate(vals):
+            print(array.shape)
+            print(mask_nodatas[index])
             # numpy.isclose will work for floating-point and integer rasters,
             # direct equality comparison will not.
             pixels_with_complete_overlap &= numpy.isclose(

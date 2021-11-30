@@ -21,6 +21,7 @@ from natcap.root import __version__
 from natcap.root import preprocessing
 from natcap.root import postprocessing
 from natcap.root import optimization
+from natcap.root import arith_parser as ap
 
 LOGGER = logging.getLogger(__name__)
 
@@ -43,8 +44,9 @@ ARGS_SPEC = {
     'module': __name__,
     'userguide_html': '../documentation/root.html',
     'args_with_spatial_overlap': {
-        "spatial_keys": ['potential_conversion_mask_path',
-                         'spatial_decision_unit_shape'],
+        # "spatial_keys": ['potential_conversion_mask_path',
+        #                  'spatial_decision_unit_shape'],
+        "spatial_keys": [],
     },
     'args': {
         'workspace_dir': validation.WORKSPACE_SPEC,
@@ -56,6 +58,13 @@ ARGS_SPEC = {
                 "Check to create marginal value tables based on "
                 "raster/serviceshed inputs"),
             'name': "Do Preprocessing",
+        },
+        'activity_mask_table_path': {
+            'type': 'csv',
+            'required': False,
+            'about': (
+                "Table with paths for activity masks. See User's Guide."),
+            'name': 'Activity Mask Table (CSV)',
         },
         'marginal_raster_table_path': {
             'type': 'csv',
@@ -95,16 +104,6 @@ ARGS_SPEC = {
                 "Use an '_' to identify fields of interest within a "
                 "serviceshed shapefile."),
             'name': 'Composite Factor Table (CSV)',
-        },
-        'potential_conversion_mask_path': {
-            'type': 'raster',
-            'required': True,
-            'about': (
-                "Raster that indicates which pixels should be "
-                "considered as potential activity locations.  Values "
-                "must be 1 for activity locations or NODATA for "
-                "excluded locations."),
-            'name': 'Activity Mask Raster',
         },
         'spatial_decision_unit_shape': {
             'type': 'freestyle_string',
@@ -248,14 +247,17 @@ def parse_args(ui_args):
 
     if ui_args['do_preprocessing']:
 
+        validate_activity_mask_table(ui_args['activity_mask_table_path'])
         validate_raster_input_table(ui_args['marginal_raster_table_path'])
+        validate_activity_names_in_amt_and_iprt(ui_args['activity_mask_table_path'],
+                                                ui_args['marginal_raster_table_path'])
         validate_shapefile_input_table(ui_args['serviceshed_shapefiles_table'])
         validate_cft_table(ui_args['marginal_raster_table_path'],
                            ui_args['serviceshed_shapefiles_table'],
                            ui_args['combined_factor_table_path'])
         validate_sdu_shape_arg(ui_args['spatial_decision_unit_shape'])
 
-        root_args['mask_raster'] = ui_args['potential_conversion_mask_path']
+        root_args['activity_mask_table_path'] = ui_args['activity_mask_table_path']
         root_args['grid_type'] = ui_args['spatial_decision_unit_shape']
         cell_area = float(ui_args['spatial_decision_unit_area']) * 10000
         if root_args['grid_type'] == 'square':
@@ -266,6 +268,8 @@ def parse_args(ui_args):
 
         root_args['csv_output_folder'] = os.path.join(root_args['workspace'], 'sdu_value_tables')
 
+        root_args['activity_masks'] = _process_activity_mask_table(
+            ui_args['activity_mask_table_path'])
         root_args['raster_table'] = _process_raster_table(ui_args['marginal_raster_table_path'])
         raster_table = root_args['raster_table']
         print('raster_table.activity_names: {}'.format(raster_table.activity_names))
@@ -361,6 +365,23 @@ def _process_constraints_table(ui_args):
     return constraints
 
 
+def _process_activity_mask_table(amtpath):
+    """
+    Reads the activity mask table into a dictionary. The expected format of the
+    table is cols 'activity', 'mask_path', and corresponding rows.
+    The created dictionary will have the activities as keys and paths as values.
+    :param amtpath:
+    :return:
+    """
+    amtdict = {}
+    with open(amtpath, 'rU') as f:
+        f.readline()  # discard header
+        for row in f:
+            row_fields = [f.strip() for f in row.split(',')]
+            amtdict[row_fields[0]] = row_fields[1]
+    return amtdict
+
+
 def _process_raster_table(filename):
     """
     TODO: refactor to preserve jsonability
@@ -436,6 +457,41 @@ def _process_objectives_table(ui_args, root_args):
         return optimization_objectives
 
 
+def validate_activity_mask_table(activity_mask_table_path):
+    """Check for column names and file existence.
+
+    Expect a table with columns 'activity' and 'mask_path'. Entries in 'mask_path' must point
+    to existing files. This function only confirms existence, not filetype.
+
+    Args:
+        activity_mask_table_path:
+
+    Returns:
+        None
+    """
+    amt = pd.read_csv(activity_mask_table_path)
+
+    amt_req_cols = ['activity', 'mask_path']
+    msg = "Error in AM table: requires two columns named activity and mask_path"
+    if len(amt.columns) != len(amt_req_cols):
+        raise RootInputError(msg)
+    for c, rc in zip(amt.columns, amt_req_cols):
+        if c == rc:
+            continue
+        else:
+            raise RootInputError(msg)
+
+    not_found = []
+    for activity, fp in zip(amt['activity'], amt['mask_path']):
+        if not os.path.isfile(fp):
+            not_found.append((activity, fp))
+    if len(not_found) > 0:
+        msg = "Error in AM table: the following mask rasters could not be located. Please check the filepaths:\n"
+        for missing in not_found:
+            msg += f"\t{missing[0]}: {missing[1]}\n"
+        raise RootInputError(msg)
+
+
 def validate_raster_input_table(raster_table_path):
     rt = pd.read_csv(raster_table_path)
     not_found = []
@@ -447,6 +503,39 @@ def validate_raster_input_table(raster_table_path):
         msg = "Error in IPR table: the following rasters could not be located. Please check the filepaths:\n"
         for f in not_found:
             msg += "\t{}\n".format(f)
+        raise RootInputError(msg)
+
+
+def validate_activity_names_in_amt_and_iprt(amt_path, iprt_path):
+    """
+    Checks to make sure that the same activity names are use in the activity mask table and impact
+    potential raster table. Each activity named in the IPRT should have a mask, and vice versa.
+
+    Args:
+        amt_path:
+        iprt_path:
+
+    Raises:
+        RootInputError
+
+    Returns:
+        None
+    """
+    amt = pd.read_csv(amt_path)
+    iprt = pd.read_csv(iprt_path)
+
+    amt_activities = list(amt['activity'])
+    iprt_activities = list(iprt.columns[1:])
+
+    match = True
+    for a in amt_activities:
+        if a not in iprt_activities:
+            match = False
+    for a in iprt_activities:
+        if a not in amt_activities:
+            match = False
+    if match is False:
+        msg = "Error: activities do not match in Activity Mask table and Impact Potential Raster table. Please check spelling and missing/extra values: {} vs {}".format(amt_activities, iprt_activities)
         raise RootInputError(msg)
 
 
@@ -497,23 +586,53 @@ def validate_sdu_shape_arg(arg_val):
 
 
 def validate_cft_table(rt_path, st_path, cft_path):
-    rt = pd.read_csv(rt_path)
-    st = pd.read_csv(st_path)
+    """
+
+    Args:
+        rt_path:
+        st_path:
+        cft_path:
+
+    Returns:
+
+    """
+    if len(cft_path) == 0:
+        return
     cft = pd.read_csv(cft_path)
 
+    # check for correct headers
+    missing_name = False
+    missing_factors = False
+    if 'name' not in cft.columns:
+        missing_name = True
+    if 'factors' not in cft.columns:
+        missing_factors = True
+    if missing_name or missing_factors:
+        raise RootInputError("CFT table is missing columns 'name' and/or 'factors'")
+
+    # get factors listed in raster table
+    rt = pd.read_csv(rt_path)
     raster_factors = list(rt['name'])
+    activity_area_factors = ['{}_ha'.format(f) for f in rt.columns]
+
+    # get factors listed in shapefile table (if provided - shapefile table is optional)
     shape_factors = []
-    for _, row in st.iterrows():
-        sname = row['name']
-        shape_factors.append(sname)
-        wcols = row['weight_col'].split(' ')
-        for wc in wcols:
-            shape_factors.append('{}_{}'.format(sname, wc))
-    all_factors = raster_factors + shape_factors
+    if len(st_path) > 0:
+        st = pd.read_csv(st_path)
+        for _, row in st.iterrows():
+            sname = row['name']
+            shape_factors.append(sname)
+            wcols = row['weight_col'].split(' ')
+            for wc in wcols:
+                shape_factors.append('{}_{}'.format(sname, wc))
+
+    # combined factors - also include math names as valid
+    all_factors = raster_factors + shape_factors + activity_area_factors + ap.ALL_AP_TOKENS
 
     invalid_factors = []
     for _, row in cft.iterrows():
-        factors = row['factors'].split(' ')
+        name = row['name']
+        factors = ap._tokenize(row['factors'])
         for f in factors:
             if f not in all_factors:
                 try:
@@ -553,8 +672,16 @@ def validate_objectives_and_constraints_tables(obj_table_file, cons_table_file, 
         not_found = []
         for row in f:
             row_vals = row.strip().split(',')
-            if row_vals[0] not in factors:
-                not_found.append(row_vals[0])
+            c_expr = row_vals[0]
+            c_factors = ap._tokenize(c_expr)
+            for f in c_factors:
+                if f not in factors and f not in ap.ALL_AP_TOKENS:
+                    try:
+                        float(f)
+                        continue
+                    except ValueError:
+                        not_found.append(f)
+
         if len(not_found) > 0:
             msg = "Error in Targets table. The following factors were not found in the sdu value tables: {}".format(
                 not_found
@@ -640,6 +767,10 @@ class Root(model.InVESTModel):
                 'do_preprocessing', validate=False))
         self.preprocessing_container.add_input(self.do_preprocessing)
 
+        self.activity_mask_raster_path = inputs.File(
+            **_create_input_kwargs_from_args_spec('activity_mask_table_path'))
+        self.preprocessing_container.add_input(self.activity_mask_raster_path)
+
         self.marginal_raster_table_path = inputs.File(
             **_create_input_kwargs_from_args_spec('marginal_raster_table_path'))
         self.preprocessing_container.add_input(self.marginal_raster_table_path)
@@ -654,9 +785,9 @@ class Root(model.InVESTModel):
             **_create_input_kwargs_from_args_spec('combined_factor_table_path'))
         self.preprocessing_container.add_input(self.combined_factor_table_path)
 
-        self.potential_conversion_mask_path = inputs.File(
-            **_create_input_kwargs_from_args_spec('potential_conversion_mask_path'))
-        self.preprocessing_container.add_input(self.potential_conversion_mask_path)
+        # self.potential_conversion_mask_path = inputs.File(
+        #     **_create_input_kwargs_from_args_spec('potential_conversion_mask_path'))
+        # self.preprocessing_container.add_input(self.potential_conversion_mask_path)
 
 
         self.spatial_decision_unit_shape = inputs.Text(
@@ -709,10 +840,11 @@ class Root(model.InVESTModel):
             args[self.optimization_suffix.args_key] = self.optimization_suffix.value()
         if self.preprocessing_container.value():
             args[self.do_preprocessing.args_key] = self.do_preprocessing.value()
+            args[self.activity_mask_raster_path.args_key] = self.activity_mask_raster_path.value()
             args[self.marginal_raster_table_path.args_key] = self.marginal_raster_table_path.value()
             args[self.serviceshed_shapefiles_table.args_key] = self.serviceshed_shapefiles_table.value()
             args[self.combined_factor_table_path.args_key] = self.combined_factor_table_path.value()
-            args[self.potential_conversion_mask_path.args_key] = self.potential_conversion_mask_path.value()
+            # args[self.potential_conversion_mask_path.args_key] = self.potential_conversion_mask_path.value()
             args[self.spatial_decision_unit_shape.args_key] = self.spatial_decision_unit_shape.value()
             args[self.spatial_decision_unit_area.args_key] = self.spatial_decision_unit_area.value()
 

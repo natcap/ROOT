@@ -5,3 +5,4 @@ sample_*/
 docsrc/_build/
 *.pyc
 .vscode
+build/

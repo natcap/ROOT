@@ -329,11 +329,11 @@ class Problem(object):
 
         # Declare variables
         if self.variable_type == 'Linear':
-            x = cvx.NonNegative(ndvs)
+            x = cvx.Variable(ndvs, nonneg=True)
         elif self.variable_type == 'Boolean':
-            x = cvx.Bool(ndvs)
+            x = cvx.Variable(ndvs, boolean=True)
         else:
-            x = cvx.Bool(ndvs)
+            x = cvx.Variable(ndvs, boolean=True)
 
         # CONSTRUCT OBJECTIVE FUNCTION
         # the objective is just a weighted sum of the different factors
@@ -350,7 +350,7 @@ class Problem(object):
 
         # x has size (ndvs, 1), v has size (ndvs, ) - i.e. is 1-dimensional
         # doing v * x with these sizes will compute dot product.
-        objective = cvx.Maximize(v * x)
+        objective = cvx.Maximize(v @ x)
 
         # CONSTRUCT CHOICE CONSTRAINTS
 
@@ -360,7 +360,7 @@ class Problem(object):
             # default case: all choices are mutually exclusive
             # 'exclusive_choices' not in self.problem_def or self.problem_def['exclusive_choices'] is None
             cm, cv = self.single_choice_constraint_mats(nparcels, nopts)
-            parcel_choice_constraint = [cm * x == cv]
+            parcel_choice_constraint = [cm @ x == cv]
         elif self.problem_def['exclusive_choices'] == []:
             # case with no exclusive options
             parcel_choice_constraint = []
@@ -368,13 +368,13 @@ class Problem(object):
             # case with just one exclusive set
             cm, cv = self.single_choice_constraint_mats(nparcels, nopts,
                                                         opt_set=self.problem_def['exclusive_choices'])
-            parcel_choice_constraint = [cm * x <= cv]
+            parcel_choice_constraint = [cm @ x <= cv]
         elif isinstance(self.problem_def['exclusive_choices'][0], list):
             # case with multiple exclusive sets
             parcel_choice_constraint = []
             for opt_set in self.problem_def['exclusive_choices']:
                 cm, cv = self.single_choice_constraint_mats(nparcels, nopts, opt_set=opt_set)
-                parcel_choice_constraint.append(cm * x <= cv)
+                parcel_choice_constraint.append(cm @ x <= cv)
         else:
             raise Exception("invalid options for problem_def['exclusive_choices']")
 
@@ -415,7 +415,7 @@ class Problem(object):
 
         for c in self.constraints:
             print('applying {}'.format(c))
-            factor_value = ap.apply(self.data, c.factor).ravel() * x
+            factor_value = ap.apply(self.data, c.factor).ravel() @ x
             if c.type in ('<', '<='):
                 factor_constraints.append(factor_value <= c.value)
             elif c.type in ('>', '>='):
@@ -427,7 +427,7 @@ class Problem(object):
             warnings.showwarning('replace "targets and "target_types" with "constraints"',
                                  DeprecationWarning, 'optim_core.py', 314)
             for f in self.problem_def['targets'].keys():
-                factor_value = self.data[f].ravel() * x
+                factor_value = self.data[f].ravel() @ x
                 factor_target = self.problem_def['targets'][f]
                 if self.problem_def['target_types'][f] in ('<', '<='):
                     factor_constraints.append(factor_value <= factor_target)
@@ -504,7 +504,8 @@ class Problem(object):
         for i in range(nunits):
             m[i, nopts * i:nopts * (i + 1)] = exclusive_choice
 
-        c = np.ones((nunits, 1), dtype='int')
+        # c = np.ones((nunits, 1), dtype='int')
+        c = np.ones(nunits, dtype='int')
 
         return m, c
 
