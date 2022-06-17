@@ -15,6 +15,7 @@ from qtpy import QtWidgets
 from qtpy import QtGui
 from natcap.invest.ui import model, inputs
 from natcap.invest import spec_utils
+from natcap.invest import validation
 import pygeoprocessing
 
 from natcap.root import __version__
