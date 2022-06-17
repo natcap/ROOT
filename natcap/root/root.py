@@ -14,7 +14,7 @@ import PySide2  # pragma: no cover
 from qtpy import QtWidgets
 from qtpy import QtGui
 from natcap.invest.ui import model, inputs
-from natcap.invest import validation
+from natcap.invest import spec_utils
 import pygeoprocessing
 
 from natcap.root import __version__
@@ -49,8 +49,8 @@ ARGS_SPEC = {
         "spatial_keys": [],
     },
     'args': {
-        'workspace_dir': validation.WORKSPACE_SPEC,
-        'results_suffix': validation.SUFFIX_SPEC,
+        'workspace_dir': spec_utils.WORKSPACE,
+        'results_suffix': spec_utils.SUFFIX,
         'do_preprocessing': {
             'type': 'boolean',
             'required': True,
