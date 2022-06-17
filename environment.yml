@@ -3,7 +3,7 @@ channels:
     - conda-forge
     - defaults
 dependencies:
-    - python="3.10"
+    - python=3.10
     - make
     - pandas
     - numexpr>=2.4.6
@@ -24,4 +24,4 @@ dependencies:
     - pip
     - pip:
         # UI requirements work more reliably when installed via pip.
-        - natcap.invest[ui]>=3.9
+        - natcap.invest[ui]>=3.11
