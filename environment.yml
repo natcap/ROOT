@@ -13,7 +13,7 @@ dependencies:
     - Shapely<1.8.2
     - requests
     - pygeoprocessing
-    - pyinstaller==4.1
+    - pyinstaller
     - setuptools
     - toml
     - setuptools_scm
