@@ -3,14 +3,14 @@ channels:
     - conda-forge
     - defaults
 dependencies:
-    - python=3.7
+    - python="3.10"
     - make
     - pandas
     - numexpr>=2.4.6
     - nomkl
     - numpy
     - cvxpy
-    - Shapely
+    - Shapely<1.8.2
     - requests
     - pygeoprocessing
     - pyinstaller==4.1
