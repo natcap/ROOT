@@ -46,12 +46,15 @@ jobs:
               run: git fetch origin +refs/tags/*:refs/tags/*
 
             - name: Setup conda environment
-              uses: conda-incubator/setup-miniconda@v2
+              uses: conda-incubator/setup-miniconda@v2.1.1
               with:
                   activate-environment: root-env
                   auto-update-conda: true
                   python-version: ${{ env.PYTHON_VERSION }}
-                  environment-file: environment.yml
+
+            - name: Install packages
+              shell: bash -l {0}
+              run: conda env update --file environment.yml
 
             - name: Install extra packages on Windows
               if: ${{ runner.os == 'Windows' }}
@@ -99,12 +102,15 @@ jobs:
               run: git fetch origin +refs/tags/*:refs/tags/*
 
             - name: Setup conda environment
-              uses: conda-incubator/setup-miniconda@v2
+              uses: conda-incubator/setup-miniconda@v2.1.1
               with:
                   activate-environment: root-env
                   auto-update-conda: true
                   python-version: ${{ env.PYTHON_VERSION }}
-                  environment-file: environment.yml
+
+            - name: Install packages
+              shell: bash -l {0}
+              run: conda env update --file environment.yml
 
             - name: Run tests
               shell: bash -l {0}
