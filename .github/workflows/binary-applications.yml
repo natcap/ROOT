@@ -45,18 +45,6 @@ jobs:
             - name: Fetch git tags
               run: git fetch origin +refs/tags/*:refs/tags/*
 
-            - name: Set up conda cache
-              uses: actions/cache@v2
-              env:
-                  # Increment to reset cache if environment.yml hasn't changed
-                  CACHE_NUMBER: 0
-              with:
-                  path: ~/conda_pkgs_dir
-                  key:
-                      ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{hashFiles('environment.yml') }}
-                  restore-keys:
-                      ${{ runner.os }}-conda
-
             - name: Setup conda environment
               uses: conda-incubator/setup-miniconda@v2
               with:
@@ -64,7 +52,6 @@ jobs:
                   auto-update-conda: true
                   python-version: ${{ env.PYTHON_VERSION }}
                   environment-file: environment.yml
-                  use-only-tar-bz2: true  # Needed for dependency caching
 
             - name: Install extra packages on Windows
               if: ${{ runner.os == 'Windows' }}
@@ -111,18 +98,6 @@ jobs:
             - name: Fetch git tags
               run: git fetch origin +refs/tags/*:refs/tags/*
 
-            - name: Set up conda cache
-              uses: actions/cache@v2
-              env:
-                  # Increment to reset cache if environment.yml hasn't changed
-                  CACHE_NUMBER: 0
-              with:
-                  path: ~/conda_pkgs_dir
-                  key:
-                      ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{hashFiles('environment.yml') }}
-                  restore-keys:
-                      ${{ runner.os }}-conda
-
             - name: Setup conda environment
               uses: conda-incubator/setup-miniconda@v2
               with:
@@ -130,7 +105,6 @@ jobs:
                   auto-update-conda: true
                   python-version: ${{ env.PYTHON_VERSION }}
                   environment-file: environment.yml
-                  use-only-tar-bz2: true  # Needed for dependency caching
 
             - name: Run tests
               shell: bash -l {0}
