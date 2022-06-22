@@ -35,6 +35,7 @@ a = Analysis([os.path.join(os.getcwd(), 'natcap', 'root', 'root.py')],  # Assume
                 'osgeo._gdal',
                 'shapely',
                 'rtree',
+                'pandas',
                 'pandas._libs.skiplist',
                 'scipy._lib.messagestream',
                 'scipy.special.cython_special',
