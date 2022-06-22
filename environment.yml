@@ -7,6 +7,7 @@ dependencies:
     - make
     - pandas
     - numexpr>=2.4.6
+    - gdal<3.4.1
     - nomkl
     - numpy
     - cvxpy
