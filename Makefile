@@ -33,7 +33,7 @@ $(DIST_DIR) $(BUILD_DIR):
 $(BIN_DIR): dist
 	rm -rf $(BIN_DIR) $(BUILD_DIR)
 	mkdir -p $(BIN_DIR)
-	$(PYTHON) -m PyInstaller --workpath $(BUILD_DIR)/pyi-build --clean --distpath $(BIN_DIR) --additional-hooks-dir exe/hooks exe/root.spec
+	$(PYTHON) -m PyInstaller --workpath $(BUILD_DIR)/pyi-build --clean --distpath $(BIN_DIR) exe/root.spec
 	$(BIN_DIR)/root/root --test-imports
 	cp root_launcher.$(USER_LAUNCH_SCRIPT_EXT) $(BIN_DIR)/root.$(USER_LAUNCH_SCRIPT_EXT)
 
