@@ -68,7 +68,7 @@ jobs:
 
             - name: Install extra packages on Windows
               if: ${{ runner.os == 'Windows' }}
-              shell: bash -l {0}
+              shell: powershell
               run: |
                   choco install vcredist140
                   refreshenv
