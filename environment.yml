@@ -10,7 +10,8 @@ dependencies:
     - nomkl
     - numpy
     - cvxpy
-    - Shapely<1.8.2
+      #- Shapely<1.8.2
+    - rtree
     - requests
     - pygeoprocessing
     - pyinstaller
@@ -20,7 +21,8 @@ dependencies:
     - psutil
     - cython
     - wheel
-    - rtree>=0.8.2,!=0.9.1,<=0.9.4  # For pyinstaller compatibility.  See natcap/invest#439
+      #- rtree>=0.8.2,!=0.9.1,<=0.9.4  # For pyinstaller compatibility.  See natcap/invest#439
+    - rtree
     - pip
     - pip:
         # UI requirements work more reliably when installed via pip.
