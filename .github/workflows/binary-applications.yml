@@ -64,7 +64,11 @@ jobs:
 
             - name: Install packages
               shell: bash -l {0}
-              run: conda env update --file environment.yml
+              run: |
+                  # Avoid poppler issue by setting channel priority.
+                  # https://github.com/conda-forge/gdal-feedstock/issues/605#issuecomment-1047858220
+                  conda config --set channel_priority strict
+                  conda env update --file environment.yml
 
             - name: Install extra packages on Windows
               if: ${{ runner.os == 'Windows' }}
@@ -72,13 +76,6 @@ jobs:
               run: |
                   choco install vcredist140
                   refreshenv
-
-            - name: Install fontconfig on mac
-              if: ${{ runner.os == 'macOS' }}
-              shell: bash -l {0}
-              run: |
-                  # This is a hack.  See https://github.com/natcap/pygeoprocessing/issues/252#issuecomment-1086407234
-                  conda install -c conda-forge fontconfig=2.13.1
 
             - name: Build binaries
               timeout-minutes: 20  # Encountered some probably-infinite loops around the 10 minute mark.

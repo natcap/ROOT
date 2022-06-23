@@ -7,7 +7,7 @@ dependencies:
     - make
     - pandas
     - numexpr>=2.4.6
-    - gdal==3.3.3  # pinning to match InVEST GDAL builds, avoid mac libpopppler dylib issue
+    - gdal<3.4.1
     - nomkl
     - numpy
     - cvxpy
