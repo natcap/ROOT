@@ -7,7 +7,8 @@ dependencies:
     - make
     - pandas
     - numexpr>=2.4.6
-    - gdal<3.4.1
+      #- gdal<3.4.1
+    - gdal==3.3.3  # matching InVEST version for now
     - nomkl
     - numpy
     - cvxpy
