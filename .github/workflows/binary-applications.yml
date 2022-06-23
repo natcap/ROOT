@@ -73,6 +73,13 @@ jobs:
                   choco install vcredist140
                   refreshenv
 
+            - name: Install fontconfig on mac
+              if: ${{ runner.os == 'macOS' }}
+              shell: bash -l {0}
+              run: |
+                  # This is a hack.  See https://github.com/natcap/pygeoprocessing/issues/252#issuecomment-1086407234
+                  conda install fontconfig=2.13.1
+
             - name: Build binaries
               timeout-minutes: 20  # Encountered some probably-infinite loops around the 10 minute mark.
               shell: bash -l {0}
