@@ -19,7 +19,6 @@ dependencies:
     - setuptools>60  # https://stackoverflow.com/a/71027007/299084
     - toml
     - setuptools_scm
-    - railroad  # Needed for setuptools._vendor.pyparsing.diagram
     - psutil
     - cython
     - wheel
@@ -29,3 +28,4 @@ dependencies:
     - pip:
         # UI requirements work more reliably when installed via pip.
         - natcap.invest[ui]>=3.11
+        - railroad  # Needed for setuptools._vendor.pyparsing.diagram
