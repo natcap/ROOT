@@ -16,9 +16,13 @@ if platform.system() == 'Darwin':
     os.environ['GDAL_DATA'] = os.path.join(sys._MEIPASS, 'gdal-data', 'gdal')
 
     # ROOT builds as of 2022-06-23 are not importing GDAL binaries, even though
-    # the DLLs are in the _MEIPASS directory.  Explicitly adding _MEIPASS as a
-    # dll directory to force the search there.
-    os.add_dll_directory(sys._MEIPASS)
+    # the DLLs are in the _MEIPASS directory.  Explicitly adding _MEIPASS to
+    # the pythonpath will hopefully force ROOT to look there.
+    try:
+        pythonpath = f"{os.environ['PYTHONPATH']}:{sys._MEIPASS}"
+    except KeyError:
+        pythonpath = f"{sys._MEIPASS}"
+    os.environ['PYTHONPATH'] = pythonpath
 
     # This allows Qt 5.13+ to start on Big Sur.
     # See https://bugreports.qt.io/browse/QTBUG-87014
