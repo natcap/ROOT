@@ -15,6 +15,11 @@ os.environ['SPATIALINDEX_C_LIBRARY'] = sys._MEIPASS
 if platform.system() == 'Darwin':
     os.environ['GDAL_DATA'] = os.path.join(sys._MEIPASS, 'gdal-data', 'gdal')
 
+    # ROOT builds as of 2022-06-23 are not importing GDAL binaries, even though
+    # the DLLs are in the _MEIPASS directory.  Explicitly adding _MEIPASS as a
+    # dll directory to force the search there.
+    os.add_dll_directory(sys._MEIPASS)
+
     # This allows Qt 5.13+ to start on Big Sur.
     # See https://bugreports.qt.io/browse/QTBUG-87014
     # and https://github.com/natcap/invest/issues/384
