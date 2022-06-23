@@ -8,7 +8,7 @@ dependencies:
     - pandas
     - numexpr>=2.4.6
       #- gdal<3.4.1
-    - gdal==3.3.3  # matching InVEST version for now
+    - gdal==3.3.3
     - nomkl
     - numpy
     - cvxpy
@@ -26,7 +26,8 @@ dependencies:
       #- rtree>=0.8.2,!=0.9.1,<=0.9.4  # For pyinstaller compatibility.  See natcap/invest#439
     - rtree
     - pip
+    - natcap.invest>=3.11
     - pip:
         # UI requirements work more reliably when installed via pip.
-        - natcap.invest[ui]>=3.11
+        #- natcap.invest[ui]>=3.11
         - railroad  # Needed for setuptools._vendor.pyparsing.diagram
