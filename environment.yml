@@ -22,8 +22,7 @@ dependencies:
     - psutil
     - cython
     - wheel
-      #- rtree>=0.8.2,!=0.9.1,<=0.9.4  # For pyinstaller compatibility.  See natcap/invest#439
-    - rtree
+    - rtree>=0.8.2,!=0.9.1,<=0.9.4  # For pyinstaller compatibility.  See natcap/invest#439
     - pip
     - pip:
         # UI requirements work more reliably when installed via pip.
