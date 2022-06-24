@@ -30,3 +30,4 @@ dependencies:
         # UI requirements work more reliably when installed via pip.
         - natcap.invest[ui]>=3.11
         - railroad  # Needed for setuptools._vendor.pyparsing.diagram
+        - opencv-python-headless; sys_platform=='darwin'  # https://stackoverflow.com/q/60042568/299084
