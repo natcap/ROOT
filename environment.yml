@@ -13,7 +13,6 @@ dependencies:
     - numpy
     - cvxpy
       #- Shapely<1.8.2
-    - rtree
     - requests
     - pygeoprocessing
     - pyinstaller

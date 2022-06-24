@@ -85,12 +85,16 @@ jobs:
                   pip install --no-deps .  # Install root as a wheel
                   make binaries
 
+            - name: Archive the dist folder for upload
+              if: failure()
+              run: zip -r dist.zip dist
+
             - name: Upload dist directory on failure
               if: failure()
               uses: actions/upload-artifact@v3
               with:
                   name: dist-${{ github.sha }}-${{ runner.os }}
-                  path: dist
+                  path: dist.zip
 
             - name: Upload installer artifact
               if: always()
