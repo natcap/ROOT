@@ -26,8 +26,7 @@ dependencies:
       #- rtree>=0.8.2,!=0.9.1,<=0.9.4  # For pyinstaller compatibility.  See natcap/invest#439
     - rtree
     - pip
-    - natcap.invest  # 3.11 not working yet, grab latest available.
     - pip:
         # UI requirements work more reliably when installed via pip.
-        #- natcap.invest[ui]>=3.11
+        - natcap.invest[ui]>=3.11
         - railroad  # Needed for setuptools._vendor.pyparsing.diagram
