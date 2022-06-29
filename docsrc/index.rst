@@ -10,11 +10,10 @@ The latest version of ROOT is available at https://www.naturalcapitalproject.org
    :caption: Contents:
 
    Introduction <rst/intro>
+   Examples <rst/examples>
    Workflow <rst/workflow>
    Interface guide <rst/interface_guide>
    Sample data walkthrough <rst/sample_data_walkthrough>
-   Examples <rst/examples>
-   ROOT UI code <rst/root_source>
    Release Notes <rst/release_notes>
 
 Indices and tables

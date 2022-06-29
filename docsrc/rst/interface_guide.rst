@@ -23,6 +23,7 @@ General
 
 Preprocessing
 -------------
+
 The preprocessing step prepares the spatial inputs (spatial decision unit map, rasters, and shapefiles) for optimization.
 
 * **Do preprocessing**: If checked, ROOT performs the preprocessing step. If not, ROOT will skip the preprocessing step, which saves time in experimenting with different optimization analyses if preprocessing is already complete.
