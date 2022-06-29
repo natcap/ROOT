@@ -4,6 +4,16 @@ on:
     push:
     pull_request:
 
+concurrency:
+  # make sure only one run of this workflow for a given PR or a given branch
+  # can happen at one time. previous queued or started runs will be cancelled.
+  # github.workflow is the workflow name
+  # github.ref is the ref that triggered the workflow run
+  # on push, this is refs/heads/<branch name>
+  # on pull request, this is refs/pull/<pull request number>/merge
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
     check-syntax-errors:
         name: "Check for syntax errors"
@@ -12,7 +22,7 @@ jobs:
             - uses: actions/checkout@v2
 
             - name: Set up python 3.10
-              uses: actions/setup-python@v1
+              uses: actions/setup-python@v2
               with:
                   python-version: "3.10"
 
@@ -45,26 +55,20 @@ jobs:
             - name: Fetch git tags
               run: git fetch origin +refs/tags/*:refs/tags/*
 
-            - name: Set up conda cache
-              uses: actions/cache@v2
-              env:
-                  # Increment to reset cache if environment.yml hasn't changed
-                  CACHE_NUMBER: 0
-              with:
-                  path: ~/conda_pkgs_dir
-                  key:
-                      ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{hashFiles('environment.yml') }}
-                  restore-keys:
-                      ${{ runner.os }}-conda
-
             - name: Setup conda environment
-              uses: conda-incubator/setup-miniconda@v2
+              uses: conda-incubator/setup-miniconda@v2.1.1
               with:
                   activate-environment: root-env
                   auto-update-conda: true
                   python-version: ${{ env.PYTHON_VERSION }}
-                  environment-file: environment.yml
-                  use-only-tar-bz2: true  # Needed for dependency caching
+
+            - name: Install packages
+              shell: bash -l {0}
+              run: |
+                  # Avoid poppler issue by setting channel priority.
+                  # https://github.com/conda-forge/gdal-feedstock/issues/605#issuecomment-1047858220
+                  conda config --set channel_priority strict
+                  conda env update --file environment.yml
 
             - name: Install extra packages on Windows
               if: ${{ runner.os == 'Windows' }}
@@ -81,12 +85,16 @@ jobs:
                   pip install --no-deps .  # Install root as a wheel
                   make binaries
 
+            - name: Archive the dist folder for upload
+              if: failure()
+              run: zip -r dist.zip dist
+
             - name: Upload dist directory on failure
               if: failure()
-              uses: actions/upload-artifact@v2
+              uses: actions/upload-artifact@v3
               with:
                   name: dist-${{ github.sha }}-${{ runner.os }}
-                  path: dist
+                  path: dist.zip
 
             - name: Upload installer artifact
               if: always()
@@ -111,26 +119,16 @@ jobs:
             - name: Fetch git tags
               run: git fetch origin +refs/tags/*:refs/tags/*
 
-            - name: Set up conda cache
-              uses: actions/cache@v2
-              env:
-                  # Increment to reset cache if environment.yml hasn't changed
-                  CACHE_NUMBER: 0
-              with:
-                  path: ~/conda_pkgs_dir
-                  key:
-                      ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{hashFiles('environment.yml') }}
-                  restore-keys:
-                      ${{ runner.os }}-conda
-
             - name: Setup conda environment
-              uses: conda-incubator/setup-miniconda@v2
+              uses: conda-incubator/setup-miniconda@v2.1.1
               with:
                   activate-environment: root-env
                   auto-update-conda: true
                   python-version: ${{ env.PYTHON_VERSION }}
-                  environment-file: environment.yml
-                  use-only-tar-bz2: true  # Needed for dependency caching
+
+            - name: Install packages
+              shell: bash -l {0}
+              run: conda env update --file environment.yml
 
             - name: Run tests
               shell: bash -l {0}
