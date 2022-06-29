@@ -67,7 +67,7 @@ ARGS_SPEC = {
                 "Table with paths for activity masks. See User's Guide."),
             'name': 'Activity Mask Table (CSV)',
         },
-        'marginal_raster_table_path': {
+        'impact_raster_table_path': {
             'type': 'csv',
             'required': True,
             'about': (
@@ -249,11 +249,11 @@ def parse_args(ui_args):
     if ui_args['do_preprocessing']:
 
         validate_activity_mask_table(ui_args['activity_mask_table_path'])
-        validate_raster_input_table(ui_args['marginal_raster_table_path'])
+        validate_raster_input_table(ui_args['impact_raster_table_path'])
         validate_activity_names_in_amt_and_iprt(ui_args['activity_mask_table_path'],
-                                                ui_args['marginal_raster_table_path'])
+                                                ui_args['impact_raster_table_path'])
         validate_shapefile_input_table(ui_args['serviceshed_shapefiles_table'])
-        validate_cft_table(ui_args['marginal_raster_table_path'],
+        validate_cft_table(ui_args['impact_raster_table_path'],
                            ui_args['serviceshed_shapefiles_table'],
                            ui_args['combined_factor_table_path'])
         validate_sdu_shape_arg(ui_args['spatial_decision_unit_shape'])
@@ -271,7 +271,7 @@ def parse_args(ui_args):
 
         root_args['activity_masks'] = _process_activity_mask_table(
             ui_args['activity_mask_table_path'])
-        root_args['raster_table'] = _process_raster_table(ui_args['marginal_raster_table_path'])
+        root_args['raster_table'] = _process_raster_table(ui_args['impact_raster_table_path'])
         raster_table = root_args['raster_table']
         print('raster_table.activity_names: {}'.format(raster_table.activity_names))
         print('raster_table.factor_names: {}'.format(raster_table.factor_names))
@@ -494,6 +494,11 @@ def validate_activity_mask_table(activity_mask_table_path):
 
 
 def validate_raster_input_table(raster_table_path):
+    """
+    Check to make sure that all the rasters named in `raster_table_path` exist.
+
+    Skips first column of the table (assumes it is a label column, not a file path column).
+    """
     rt = pd.read_csv(raster_table_path)
     not_found = []
     for c in rt.columns[1:]:
@@ -772,9 +777,9 @@ class Root(model.InVESTModel):
             **_create_input_kwargs_from_args_spec('activity_mask_table_path'))
         self.preprocessing_container.add_input(self.activity_mask_raster_path)
 
-        self.marginal_raster_table_path = inputs.File(
-            **_create_input_kwargs_from_args_spec('marginal_raster_table_path'))
-        self.preprocessing_container.add_input(self.marginal_raster_table_path)
+        self.impact_raster_table_path = inputs.File(
+            **_create_input_kwargs_from_args_spec('impact_raster_table_path'))
+        self.preprocessing_container.add_input(self.impact_raster_table_path)
 
 
         self.serviceshed_shapefiles_table = inputs.File(
@@ -842,7 +847,7 @@ class Root(model.InVESTModel):
         if self.preprocessing_container.value():
             args[self.do_preprocessing.args_key] = self.do_preprocessing.value()
             args[self.activity_mask_raster_path.args_key] = self.activity_mask_raster_path.value()
-            args[self.marginal_raster_table_path.args_key] = self.marginal_raster_table_path.value()
+            args[self.impact_raster_table_path.args_key] = self.impact_raster_table_path.value()
             args[self.serviceshed_shapefiles_table.args_key] = self.serviceshed_shapefiles_table.value()
             args[self.combined_factor_table_path.args_key] = self.combined_factor_table_path.value()
             # args[self.potential_conversion_mask_path.args_key] = self.potential_conversion_mask_path.value()
