@@ -142,9 +142,14 @@ def execute(args):
     else:
         sdu_serviceshed_coverage = None
 
-    # activity-specific processing section
+    # ACTIVITY-SPECIFIC PROCESSING
     raster_table = args['raster_table']
     activities = raster_table.activity_names
+    
+    # process baseline first if we have it
+    if "baseline" in activities:
+        activities = ["baseline"] + [a for a in activities if a != "baseline"]
+    baseline_raster_file_lookup = None
 
     for activity in activities:
         print('aggregating rasters for {}'.format(activity))
@@ -160,10 +165,16 @@ def execute(args):
             f_reg[mv_id] = os.path.join(args['workspace'], os.path.basename(mv_path))
             _clean_negative_nodata_values(mv_path, f_reg[mv_id])
             clean_raster_file_lookup[mv_id] = f_reg[mv_id]
+        if activity == "baseline":
+            baseline_raster_file_lookup = baseline_raster_file_lookup
+
 
         print('STEP: Aggregate Value Rasters to SDU')
         marginal_value_lookup = _aggregate_marginal_values(
-            f_reg['sdu_grid'], args['sdu_id_col'], mask_path, clean_raster_file_lookup)
+            f_reg['sdu_grid'], args['sdu_id_col'], mask_path, clean_raster_file_lookup,
+            baseline_raster_file_lookup=baseline_raster_file_lookup)
+        if activity == "baseline":
+            baseline_value_lookup = marginal_value_lookup
 
         print('STEP: Create IP table')
         _build_ip_table(
@@ -174,18 +185,19 @@ def execute(args):
         if 'combined_factors' in args and args['combined_factors'] is not None:
             _add_combined_factors(table_file, args['combined_factors'])
 
-    print('STEP: Create baseline table')
-    baseline_value_lookup = marginal_value_lookup.copy()
-    # zero out all the marginal values since that's equivalent of baseline
-    for marginal_value_tuple in baseline_value_lookup.values():
-        for mv_id in marginal_value_tuple[1]:
-            marginal_value_tuple[1][mv_id] = [0.0, 0, 0.0]
+    if "baseline" not in activities:
+        print('STEP: Create baseline table')
+        baseline_value_lookup = marginal_value_lookup.copy()
+        # zero out all the marginal values since that's equivalent of baseline
+        for marginal_value_tuple in baseline_value_lookup.values():
+            for mv_id in marginal_value_tuple[1]:
+                marginal_value_tuple[1][mv_id] = [0.0, 0, 0.0]
 
-    _build_ip_table(
-        args['sdu_id_col'], activities, None, baseline_value_lookup, sdu_serviceshed_coverage,
-        f_reg['baseline_ip_table'], baseline_table=True)
-    if 'combined_factors' in args and args['combined_factors'] is not None:
-        _add_combined_factors(f_reg['baseline_ip_table'], args['combined_factors'])
+        _build_ip_table(
+            args['sdu_id_col'], activities, None, baseline_value_lookup, sdu_serviceshed_coverage,
+            f_reg['baseline_ip_table'], baseline_table=True)
+        if 'combined_factors' in args and args['combined_factors'] is not None:
+            _add_combined_factors(f_reg['baseline_ip_table'], args['combined_factors'])
 
 
 def _serviceshed_coverage(
@@ -462,7 +474,7 @@ def _clean_negative_nodata_values(
 
 
 def _aggregate_marginal_values(
-        sdu_grid_path, sdu_key_id, mask_raster_path, marginal_value_lookup):
+        sdu_grid_path, sdu_key_id, mask_raster_path, marginal_value_raster_lookup, baseline_raster_lookup=None):
     """Build table that indexes SDU ids with aggregated marginal values.
 
     Parameters:
@@ -472,9 +484,11 @@ def _aggregate_marginal_values(
             each feature.
         mask_raster_path (string): path to a mask raster whose pixels are
             considered "valid" if they are not nodata.
-        marginal_value_lookup (dict): keys are marginal value IDs that
+        marginal_value_raster_lookup (dict): keys are marginal value IDs that
             will be used in the optimization table; values are paths to
             single band rasters.
+        baseline_raster_lookup (dict): same as `marginal_value_raster_lookup` but
+            for the baseline rasters. Need this if calculating "merged" values.
 
     Returns:
         A dictionary that encapsulates stats about each polygon, mask coverage
@@ -494,14 +508,14 @@ def _aggregate_marginal_values(
     """
     # TODO: drop activity mask, get activity from the rasters - require nodata for non-transition pixels
 
-    print('marginal_value_lookup: {}'.format(marginal_value_lookup))
-    marginal_value_ids = marginal_value_lookup.keys()
+    print('marginal_value_lookup: {}'.format(marginal_value_raster_lookup))
+    marginal_value_ids = marginal_value_raster_lookup.keys()
     with tempfile.NamedTemporaryFile(dir='.', delete=False) as id_raster_file:
         id_raster_path = id_raster_file.name
 
     id_nodata = -1
     pygeoprocessing.new_raster_from_base(
-        marginal_value_lookup[list(marginal_value_ids)[0]], id_raster_path,
+        marginal_value_raster_lookup[list(marginal_value_ids)[0]], id_raster_path,
         gdal.GDT_Int32, band_nodata_list=[id_nodata],
         fill_value_list=[id_nodata])
 
@@ -520,12 +534,21 @@ def _aggregate_marginal_values(
         id_raster, [1], layer, options=['ATTRIBUTE=%s' % sdu_key_id])
     id_raster = None
     marginal_value_rasters = [
-        gdal.Open(marginal_value_lookup[marginal_value_id])
+        gdal.Open(marginal_value_raster_lookup[marginal_value_id])
         for marginal_value_id in marginal_value_ids]
     marginal_value_bands = [
         raster.GetRasterBand(1) for raster in marginal_value_rasters]
     marginal_value_nodata_list = [
         band.GetNoDataValue() for band in marginal_value_bands]
+    
+    if baseline_raster_lookup is not None:
+        baseline_value_rasters = [
+            gdal.Open(baseline_raster_lookup[marginal_value_id])
+            for marginal_value_id in marginal_value_ids]
+        baseline_value_bands = [
+            raster.GetRasterBand(1) for raster in baseline_value_rasters]
+        baseline_value_nodata_list = [
+            band.GetNoDataValue() for band in baseline_value_bands]
 
     # first element in tuple is the coverage stats:
     # (sdu area, sdu pixel count, mask pixel count, mask pixel coverage in Ha)
@@ -541,6 +564,13 @@ def _aggregate_marginal_values(
             (id_raster_path, 1)):
         marginal_value_blocks = [
             band.ReadAsArray(**block_offset) for band in marginal_value_bands]
+        if baseline_raster_lookup is not None:
+            baseline_value_blocks = [
+                band.ReadAsArray(**block_offset) for band in baseline_value_bands]
+        else:
+            baseline_value_nodata_list = [None for _ in marginal_value_bands]
+            baseline_value_bands = [None for _ in marginal_value_bands]
+        
         mask_block = mask_band.ReadAsArray(**block_offset)
         for aggregate_id in np.unique(id_block):
             if aggregate_id == id_nodata:
@@ -554,9 +584,9 @@ def _aggregate_marginal_values(
             valid_mask_block = mask_block[aggregate_mask]
             marginal_value_sums[aggregate_id][0][2] += np.count_nonzero(
                 valid_mask_block != mask_nodata)
-            for mv_id, mv_nodata, mv_block in zip(
+            for mv_id, mv_nodata, mv_block, base_nodata, base_block in zip(
                     marginal_value_ids, marginal_value_nodata_list,
-                    marginal_value_blocks):
+                    marginal_value_blocks, baseline_value_nodata_list, baseline_value_blocks):
                 valid_mv_block = mv_block[aggregate_mask]
                 # raw aggregation of marginal value
                 # marginal_value_sums[aggregate_id][1][mv_id] =
@@ -565,6 +595,12 @@ def _aggregate_marginal_values(
                     valid_mv_block[np.logical_and(
                         valid_mv_block != mv_nodata,
                         valid_mask_block != mask_nodata)])
+                if base_block is not None:
+                    marginal_value_sums[aggregate_id][1][mv_id][0] += np.nansum(
+                        base_block[np.logical_and(
+                            base_block != base_nodata,
+                            valid_mask_block == mask_nodata)])
+
                 # pixel count coverage of marginal value
                 marginal_value_sums[aggregate_id][1][mv_id][1] += (
                     np.count_nonzero(np.logical_and(
