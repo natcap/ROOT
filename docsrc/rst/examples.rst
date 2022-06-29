@@ -22,8 +22,8 @@ Input data
 
 To set up this analysis, we need the following data:
 
-*   Map of potential restoration sites: This raster indicates which pixels are eligible candidates for restoration. For this example, we have selected all cropland pixels below the 25th percentile in terms of crop value. 
-*	Potential benefit maps: These rasters indicate the per-pixel benefit of restoration to each of the objectives. For this example, we include improvement in a biodiversity index, change in carbon storage, and reduction in nitrate loading to drinking water. **Important:** Note that these rasters should indicate the *benefit* of restoration, meaning the change from the current conditions, rather than the absolute, or total, value after the change is made. There is an option described later [LINK TO GUIDE] that allows the optimization to run based on a total, but it requires that data be provided on the baseline conditions as well.
+*   Map of potential restoration sites: This raster indicates which pixels are eligible candidates for restoration. For this example, we have selected all cropland pixels below the 25th percentile in terms of crop value. Details about these rasters are :ref:`in the guide here<ig-amt>`.
+*	Potential benefit maps: These rasters indicate the per-pixel benefit of restoration to each of the objectives. For this example, we include improvement in a biodiversity index, change in carbon storage, and reduction in nitrate loading to drinking water. **Important:** Note that these rasters should indicate the *benefit* of restoration, meaning the change from the current conditions, rather than the absolute, or total, value after the change is made. There is an option :ref:`described in the guide<ig-abs-vs-marg>` that allows the optimization to run based on a total, but it requires that data be provided on the baseline conditions as well.
 
 When preparing this data for ROOT, it is important that the rasters be provided with identical extent, projection, and pixel size. Additionally, there is a particular format for the csv tables used to tell ROOT which raster to use for which data value. These details are discussed in the [INTERFACE GUIDE].
 

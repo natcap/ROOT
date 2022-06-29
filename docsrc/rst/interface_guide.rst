@@ -28,6 +28,7 @@ The preprocessing step prepares the spatial inputs (spatial decision unit map, r
 
 * **Do preprocessing**: If checked, ROOT performs the preprocessing step. If not, ROOT will skip the preprocessing step, which saves time in experimenting with different optimization analyses if preprocessing is already complete.
 
+.. _ig-amt:
 * **Activity mask table**: This table points to rasters that indicate valid locations for each activity.
 
     - *Activity masks*: Rasters with a value of 1 where an activity could take place, and NODATA elsewhere.
@@ -39,6 +40,7 @@ The preprocessing step prepares the spatial inputs (spatial decision unit map, r
             activity1, filepath
             activity2, filepath
 
+.. _ig-iprt:
 * **Impact potential raster table**: This table points to the rasters that give the potential impact of each activity on each of the metrics with raster data.
 
     - *Impact potential raster*: Raster for a particular activity and metric that specifies the value of each pixel being selected for the activity.
@@ -51,6 +53,7 @@ The preprocessing step prepares the spatial inputs (spatial decision unit map, r
             activity2, filepath, filepath, "..."
 
         The upper-left value should be :attr:`activity`, but the other entries should be replaced with corresponding activity names, factor names, or the correct filepath.
+
 
 * **Spatial weighting maps table**: This table points to shapefiles that specify weighting factors.
 
@@ -85,6 +88,16 @@ The preprocessing step prepares the spatial inputs (spatial decision unit map, r
     The SDU shapefile will either be copied or created as sdu_grid.shp in the workspace.
 
 * **Spatial decision unit area**: Specify the area of each SDU polygon for regular grids. Ignored for custom shapefile.
+
+.. _ig-abs-vs-marg:
+Absolute vs marginal values
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ROOT offers two modes for evaluation, the first assuming that the impact potential rasters represent "marginal values", meaning the change from the baseline state. The second assuming that they represent "absolute values", meaning they represent the state after the change. In the latter case, ROOT also requires information about the baseline in order to account for the relative changes. In order to do this, there are several specific changes required:
+
+* Provide an activity called `baseline`, accompanied by an activity mask that identifies the whole area as valid. 
+* Provide all impact potential rasters as absolute values.
+* ROOT will assess the total values in a given SDU under a certain activity choice by combining the values from the corresponding baseline and activity impact potential rasters - it will assign the activity-specific values to pixels identifed as valid by the corresponding activity mask, and will assign the baseline values to all other pixels. In this way, it captures the change on the relevant pixels and the remaining baseline value on other pixels.
 
 
 
