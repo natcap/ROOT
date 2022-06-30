@@ -3,7 +3,7 @@ Example of a ROOT application
 
 The central theme of ROOT is to think about a management decision of consisting of allocating different **activities** on the landscape based on their **impacts** and using **optimization** to find a range of best-case options to inform **decision-making**. In this section, we go through a sample application of ROOT, building from the core features of the tool to the various additional features that can be used to address questions of increasing complexity. 
 
-In the base case, we will target a given number of hectares to restore in order to maximize a suite of ecosystem services. The extensions will consider different kinds of activities together, spatial weighting, converting between absolute and marginal value approaches, and applying different constraints.
+In the base case, we will target a given number of hectares to restore in order to maximize a suite of ecosystem services. The extensions will consider different kinds of activities together, spatial weighting, converting between absolute and marginal value approaches, and applying different constraints. To see the specific steps to implement these examples in ROOT, see the :ref:`sample_data_walkthrough`
 
 Base case: Restoration to improve ecosystem services
 ----------------------------------------------------
@@ -28,7 +28,6 @@ To set up this analysis, we need the following data:
 When preparing this data for ROOT, it is important that the rasters be provided with identical extent, projection, and pixel size. Additionally, there is a particular format for the csv tables used to tell ROOT which raster to use for which data value. These details are discussed in the [INTERFACE GUIDE].
 
 Within ROOT, one key user-defined parameter is the “spatial decision unit” (SDU – LINK TO INTERFACE GUIDE). This is the spatial unit for which ROOT turns each of the potential activities (in this case restoration) on or off. Due to computational limitations, it is generally not practical to have SDUs correspond with pixels. Depending on pixel size, this might also correspond with reasonable project limitations – for example it might not make sense to identify 30m^2 areas for restoration if there is a fixed per-project cost. Here we will set the SDUs to be 25 ha, but it is worth considering this choice carefully for any given application. Note that ROOT also allows the user to provide an explicit map (via a shapefile) of desired SDUs, giving a great deal of flexibility to how SDUs are structured. 
-
 
 With this data provided, we can run ROOT’s preprocessing step, which calculates per-SDU totals for each of the provided potential impact rasters. This step automates masking the impact rasters according to the activity mask and performing the zonal stats needed to sum the impact per SDU polygon. The results are saved to tables of values used by the optimization step, as well as to a shapefile output that can be used for user analysis or visualization. [LINK TO GUIDE]
 
@@ -112,21 +111,5 @@ Let’s consider a case where we have target restoration areas, A_i, for several
 *	Define restoration in each region as its own activity and provide distinct activity masks for each region. Then set constraints on the area in each region. “region_name_ha” == A_i. 
 *	Define spatial weighting masks for each region and create composite factors that combine the spatial extent and activity area to create a new variable. Set constraints on those new variables.
 These approaches are identical from the perspective of the optimization tool, but hopefully give you some ideas of how to approach similar problems. 
-
-
-
-
-Examples of ROOT usage:
-
-Costa Rica
-----------
-First example.
-
-
-Colombia
---------
-Second example.
-
-
 
 
