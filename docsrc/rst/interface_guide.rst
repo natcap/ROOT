@@ -21,6 +21,8 @@ General
 
 * **Workspace**: Folder where results from ROOT will be saved
 
+.. _ig-preprocessing:
+
 Preprocessing
 -------------
 
@@ -29,6 +31,7 @@ The preprocessing step prepares the spatial inputs (spatial decision unit map, r
 * **Do preprocessing**: If checked, ROOT performs the preprocessing step. If not, ROOT will skip the preprocessing step, which saves time in experimenting with different optimization analyses if preprocessing is already complete.
 
 .. _ig-amt:
+
 * **Activity mask table**: This table points to rasters that indicate valid locations for each activity.
 
     - *Activity masks*: Rasters with a value of 1 where an activity could take place, and NODATA elsewhere.
@@ -41,6 +44,7 @@ The preprocessing step prepares the spatial inputs (spatial decision unit map, r
             activity2, filepath
 
 .. _ig-iprt:
+
 * **Impact potential raster table**: This table points to the rasters that give the potential impact of each activity on each of the metrics with raster data.
 
     - *Impact potential raster*: Raster for a particular activity and metric that specifies the value of each pixel being selected for the activity.
@@ -80,6 +84,8 @@ The preprocessing step prepares the spatial inputs (spatial decision unit map, r
     - *Formulas*: The formulas tell ROOT how to combine factors from the raster or shapefile inputs to generate new factors. The new factor is calculated for each SDU and each activity. Any of the basic mathematical operations can be used (+, -, \*, /, ^), as well as numbers, parentheses for grouping, and the functions log, sqrt, and abs. Additionally, sum, min, and max can be used to refer to the corresponding values for a particular factor (*Note*: these are applied separately for each activity - if this is not what you want, you must calculate the overall max yourself).
     - *Activity area* note that preprocessing will create a factor for each activity called :attr:`*activity*_ha` (using the activity names assigned in the activity mask table). These columns can be used in the composite factor table, e.g. to create a cost variable by multiplying by a cost per hectare for the activity.
 
+.. _ig-sdu:
+
 * **Spatial decision unit shape**: Select either a custom SDU shapefile or a regular grid.
 
     - *Custom shapefile*: in order to use a specific shapefile for the SDUs, enter the path to the file in the textbox. The shapefile must contain a field :attr:`SDU_ID` with unique ID numbers for each SDU polygon.
@@ -90,6 +96,7 @@ The preprocessing step prepares the spatial inputs (spatial decision unit map, r
 * **Spatial decision unit area**: Specify the area of each SDU polygon for regular grids. Ignored for custom shapefile.
 
 .. _ig-abs-vs-marg:
+
 Absolute vs marginal values
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -114,6 +121,8 @@ Optimization
     - *n_dim_frontier*: similar to weight_table, except ROOT will randomly generate weights for each objective for each run.
 
 * **Number of frontier points**: Number of optimizations to run (only required for n_dim_frontier analyses)
+
+.. _ig-objectives-table
 
 * **Objectives table**: This table identifies the factors to optimize for, and additional information depending on the analysis type. For both options, the column headers should be the names of the factors to treat as objectives. Any numeric column from the csv files in :attr:`workspace/sdu_value_tables` can be used. In most cases, these will be the fields named in the tables from the preprocessing steps, although users are free to add additional columns to the SDU value tables containing data from other sources. Note that the columns must be added to the tables for all activities.
 
