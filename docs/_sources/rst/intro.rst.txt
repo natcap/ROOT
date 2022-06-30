@@ -3,17 +3,17 @@ Introduction
 
 Many conservation and resource management problems involve decisions about where on the landscape to undertake different actions: protection, restoration, different types of management, etc... These decisions are guided by a variety of objectives and priorities affecting diverse groups of people. In most decisions there are both tradeoffs to consider, as well as the potential to take advantage of co-benefits to improve the overall benefits provided by a set of actions. ROOT is a software tool that provides a way to approach challenging decision problems like these by utilizing an optimization approach to identify a range of management choice portfolios that maximize benefits subject to decision-specific constraints.
 
-Getting ROOT
-------------
+Getting ROOT and sample data
+----------------------------
 
 The latest version of ROOT can be downloaded from these links:
 
-* Windows build
-* Mac build
+    * Windows build: https://github.com/natcap/ROOT/suites/7144558475/artifacts/284088292
+    * Mac build: https://github.com/natcap/ROOT/suites/7144558475/artifacts/284088290
 
 Sample data to accompany the examples in this guide can be downloaded from:
 
-* Sample data
+    * Sample data: https://storage.googleapis.com/root-sample-data/root_sample_data.zip
 
 Learning about ROOT
 -------------------
