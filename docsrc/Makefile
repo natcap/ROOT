@@ -16,7 +16,7 @@ help:
 
 github:
 	rm -r "$(GITHUBPAGESDIR)"
-	cp -R "$(BUILDDIR)" "$(GITHUBPAGESDIR)"
+	cp -R "$(BUILDDIR)html" "$(GITHUBPAGESDIR)"
 
 .PHONY: help github Makefile
 
