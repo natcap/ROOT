@@ -40,6 +40,7 @@ release = '1.0'
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.autosectionlabel',
     'sphinx.ext.githubpages',
     'sphinx.ext.mathjax',
     'sphinx.ext.napoleon',

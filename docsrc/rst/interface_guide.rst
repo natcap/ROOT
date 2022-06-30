@@ -115,6 +115,8 @@ Optimization
 
 * **Optimization results suffix**: By default, the results of an optimization run are stored in :attr:`workspace/optimizations`. This field can be used to distinguish results from different runs. If a sufix is provided, the results will be saved to :attr:`workspace/optimizations_suffix`.
 
+.. _ig-optimization-analysis-type:
+
 * **Analysis type**: Tells ROOT which of several optimization analyses to perform. Options are:
 
     - *weight_table*: Solves one or more optimization runs with user-specified weights assigned to each objective.
@@ -122,7 +124,7 @@ Optimization
 
 * **Number of frontier points**: Number of optimizations to run (only required for n_dim_frontier analyses)
 
-.. _ig-objectives-table
+.. _ig-objectives-table:
 
 * **Objectives table**: This table identifies the factors to optimize for, and additional information depending on the analysis type. For both options, the column headers should be the names of the factors to treat as objectives. Any numeric column from the csv files in :attr:`workspace/sdu_value_tables` can be used. In most cases, these will be the fields named in the tables from the preprocessing steps, although users are free to add additional columns to the SDU value tables containing data from other sources. Note that the columns must be added to the tables for all activities.
 
@@ -143,6 +145,7 @@ Optimization
 
             min, min, max
 
+.. _ig-targets_table:
 
 * **Targets table**: Allows the user to set targets (constraints) for the optimizations. The table should have columns :attr:`formula`, :attr:`cons_type`, and :attr:`value`.
 

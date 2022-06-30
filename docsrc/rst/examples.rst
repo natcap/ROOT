@@ -3,7 +3,8 @@ Example of a ROOT application
 
 The central theme of ROOT is to think about a management decision of consisting of allocating different **activities** on the landscape based on their **impacts** and using **optimization** to find a range of best-case options to inform **decision-making**. In this section, we go through a sample application of ROOT, building from the core features of the tool to the various additional features that can be used to address questions of increasing complexity. 
 
-In the base case, we will target a given number of hectares to restore in order to maximize a suite of ecosystem services. The extensions will consider different kinds of activities together, spatial weighting, converting between absolute and marginal value approaches, and applying different constraints. To see the specific steps to implement these examples in ROOT, see the :ref:`sample_data_walkthrough`
+In the base case, we will target a given number of hectares to restore in order to maximize a suite of ecosystem services. The extensions will consider different kinds of activities together, spatial weighting, converting between absolute and marginal value approaches, and applying different constraints. To see the specific steps to implement these examples in ROOT, see the :ref:`sample data walkthrough<Sample data walkthrough>`. Throughout this section, links will point to the applicable section in the :ref:`Interface Guide<Documentation for ROOT interface inputs>` for a more general overview. 
+
 
 Base case: Restoration to improve ecosystem services
 ----------------------------------------------------
@@ -42,11 +43,11 @@ The :ref:`objectives<ig-objectives-table>` define the values that we aim to maxi
 *	Reduction in nitrate concentrations in drinking water
 In this example, each of these has been calculated so that a larger value represents a bigger benefit, although ROOT can handle objectives where a smaller value is preferable as well (e.g. total nitrate rather than reduction of nitrate, or cost). When identifying each objective, the user must indicate whether to maximize or minimize it.
 
-Constraints (targets) are rules that determine which allocations of the activities are valid. Some familiar constraints might be a total budget that can’t be exceeded, or a critical area of habitat that needs to be protected. In ROOT, constraints can be set on multiple elements at a time, allowing for some relatively complex problem formulations to be addressed. In this example, we will set a constraint on the total area to restore. [LINK TO GUIDE]
+Constraints (targets) are rules that determine which allocations of the activities are valid. Some familiar constraints might be a total budget that can’t be exceeded, or a critical area of habitat that needs to be protected. In ROOT, constraints can be set on multiple elements at a time, allowing for some relatively complex problem formulations to be addressed. In this example, we will set a constraint on the total area to restore.
 
 Note that it is possible to treat some value either as an objective or constraint (or both). For example, the user could set a budget constraint and examine the range of possible environmental benefits in one analysis, while in another set a fixed environmental goal and solve for the least-cost solution. In the optimization literature, these two approaches are called “dual problems” of each other.  
 
-Finally, we must specify what kind of analysis ROOT will perform. Most of these options are explained in more detail later [LINK TO GUIDE], so for now, since we are interested in capturing the full range of the possible co-benefits to biodiversity, carbon, and water quality, we will use the “n dim frontier” option. The n-dimensional frontier choice will randomly sample from across the range of combinations of each given objective. For this analysis, we set the optimization to maximize each of the environmental objectives with a target value of 10,000 ha of the restoration activity. Note that almost all single-activity ROOT analyses will need a constraint of some kind. Without one, the optimization is likely to select all possible activity locations, which is unlikely to be useful information.
+Finally, we must specify what kind of analysis ROOT will perform. These options are explained in more detail :ref:`in the guide<ig-optimization-analysis-type>`, but for now, since we are interested in capturing the full range of the possible co-benefits to biodiversity, carbon, and water quality, we will use the “n dim frontier” option. The n-dimensional frontier choice will randomly sample from across the range of combinations of each given objective. For this analysis, we set the optimization to maximize each of the environmental objectives with a target value of 10,000 ha of the restoration activity. Note that almost all single-activity ROOT analyses will need a constraint of some kind. Without one, the optimization is likely to select all possible activity locations, which is unlikely to be useful information.
 
 Running the analysis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -110,6 +111,9 @@ Let’s consider a case where we have target restoration areas, A_i, for several
 
 *	Define restoration in each region as its own activity and provide distinct activity masks for each region. Then set constraints on the area in each region. “region_name_ha” == A_i. 
 *	Define spatial weighting masks for each region and create composite factors that combine the spatial extent and activity area to create a new variable. Set constraints on those new variables.
+
 These approaches are identical from the perspective of the optimization tool, but hopefully give you some ideas of how to approach similar problems. 
 
+
+**More examples to come**
 

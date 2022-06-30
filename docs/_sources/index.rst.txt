@@ -9,16 +9,16 @@ The latest version of ROOT is available at https://www.naturalcapitalproject.org
    :numbered:
    :caption: Contents:
 
-   Introduction <rst/intro>
+   Introduction and Installation<rst/intro>
    Narrative examples <rst/examples>
    Workflow <rst/workflow>
    Interface guide <rst/interface_guide>
    Sample data walkthrough <rst/sample_data_walkthrough>
    Release Notes <rst/release_notes>
 
-Indices and tables
-==================
+.. Indices and tables
+.. ==================
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. * :ref:`genindex`
+.. * :ref:`modindex`
+.. * :ref:`search`
