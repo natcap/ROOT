@@ -1,73 +1,38 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>3. Documentation for ROOT interface inputs &mdash; ROOT 1.0 documentation</title>
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-
-  
-  
-  
-  
-
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>4. Documentation for ROOT interface inputs &mdash; ROOT 1.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-
-    
+    <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="4. Sample data walkthrough" href="sample_data_walkthrough.html" />
-    <link rel="prev" title="2. ROOT Workflow" href="workflow.html" /> 
+    <link rel="next" title="5. Sample data walkthrough" href="sample_data_walkthrough.html" />
+    <link rel="prev" title="3. ROOT Workflow" href="workflow.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
-            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> ROOT
-          
-
-          
+            <a href="../index.html" class="icon icon-home"> ROOT
           </a>
-
-          
-            
-            
               <div class="version">
                 1.0
               </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -75,99 +40,51 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="intro.html">1. Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="workflow.html">2. Workflow</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">3. Interface guide</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#general">3.1. General</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#preprocessing">3.2. Preprocessing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#optimization">3.3. Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">1. Introduction and Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">2. Narrative examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflow.html">3. Workflow</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">4. Interface guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#general">4.1. General</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#preprocessing">4.2. Preprocessing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#absolute-vs-marginal-values">4.2.1. Absolute vs marginal values</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="sample_data_walkthrough.html">4. Sample data walkthrough</a></li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html">5. Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="root_source.html">6. ROOT UI code</a></li>
-<li class="toctree-l1"><a class="reference internal" href="release_notes.html">7. Release Notes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#optimization">4.3. Optimization</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sample_data_walkthrough.html">5. Sample data walkthrough</a></li>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">6. Release Notes</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">ROOT</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-        
-      <li><span class="section-number">3. </span>Documentation for ROOT interface inputs</li>
-    
-    
+      <li><span class="section-number">4. </span>Documentation for ROOT interface inputs</li>
       <li class="wy-breadcrumbs-aside">
-        
-            
             <a href="../_sources/rst/interface_guide.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="documentation-for-root-interface-inputs">
-<h1><span class="section-number">3. </span>Documentation for ROOT interface inputs<a class="headerlink" href="#documentation-for-root-interface-inputs" title="Permalink to this headline">¶</a></h1>
+             
+  <section id="documentation-for-root-interface-inputs">
+<h1><span class="section-number">4. </span>Documentation for ROOT interface inputs<a class="headerlink" href="#documentation-for-root-interface-inputs" title="Permalink to this heading"></a></h1>
 <p>This documentation walks through each of the fields in ROOT’s interface, explaining the expected input and choices. Most of the work of setting up a ROOT analysis comes in preparing the input data and configuring a set of tables that describe the analysis to perform. This page describes how to do that.</p>
 <blockquote>
 <div><div class="admonition important">
@@ -186,17 +103,19 @@
 </ul>
 </div>
 </div></blockquote>
-<div class="section" id="general">
-<h2><span class="section-number">3.1. </span>General<a class="headerlink" href="#general" title="Permalink to this headline">¶</a></h2>
+<section id="general">
+<h2><span class="section-number">4.1. </span>General<a class="headerlink" href="#general" title="Permalink to this heading"></a></h2>
 <ul class="simple">
 <li><p><strong>Workspace</strong>: Folder where results from ROOT will be saved</p></li>
 </ul>
-</div>
-<div class="section" id="preprocessing">
-<h2><span class="section-number">3.2. </span>Preprocessing<a class="headerlink" href="#preprocessing" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="preprocessing">
+<span id="ig-preprocessing"></span><h2><span class="section-number">4.2. </span>Preprocessing<a class="headerlink" href="#preprocessing" title="Permalink to this heading"></a></h2>
 <p>The preprocessing step prepares the spatial inputs (spatial decision unit map, rasters, and shapefiles) for optimization.</p>
-<ul>
+<ul class="simple">
 <li><p><strong>Do preprocessing</strong>: If checked, ROOT performs the preprocessing step. If not, ROOT will skip the preprocessing step, which saves time in experimenting with different optimization analyses if preprocessing is already complete.</p></li>
+</ul>
+<ul id="ig-amt">
 <li><p><strong>Activity mask table</strong>: This table points to rasters that indicate valid locations for each activity.</p>
 <blockquote>
 <div><ul>
@@ -227,6 +146,8 @@
 </ul>
 </div></blockquote>
 </li>
+</ul>
+<ul id="ig-iprt">
 <li><p><strong>Impact potential raster table</strong>: This table points to the rasters that give the potential impact of each activity on each of the metrics with raster data.</p>
 <blockquote>
 <div><ul>
@@ -332,6 +253,8 @@
 </ul>
 </div></blockquote>
 </li>
+</ul>
+<ul id="ig-sdu">
 <li><p><strong>Spatial decision unit shape</strong>: Select either a custom SDU shapefile or a regular grid.</p>
 <blockquote>
 <div><ul class="simple">
@@ -343,12 +266,23 @@
 </li>
 <li><p><strong>Spatial decision unit area</strong>: Specify the area of each SDU polygon for regular grids. Ignored for custom shapefile.</p></li>
 </ul>
-</div>
-<div class="section" id="optimization">
-<h2><span class="section-number">3.3. </span>Optimization<a class="headerlink" href="#optimization" title="Permalink to this headline">¶</a></h2>
-<ul>
+<section id="absolute-vs-marginal-values">
+<span id="ig-abs-vs-marg"></span><h3><span class="section-number">4.2.1. </span>Absolute vs marginal values<a class="headerlink" href="#absolute-vs-marginal-values" title="Permalink to this heading"></a></h3>
+<p>ROOT offers two modes for evaluation, the first assuming that the impact potential rasters represent “marginal values”, meaning the change from the baseline state. The second assuming that they represent “absolute values”, meaning they represent the state after the change. In the latter case, ROOT also requires information about the baseline in order to account for the relative changes. In order to do this, there are several specific changes required:</p>
+<ul class="simple">
+<li><p>Provide an activity called <cite>baseline</cite>, accompanied by an activity mask that identifies the whole area as valid.</p></li>
+<li><p>Provide all impact potential rasters as absolute values.</p></li>
+<li><p>ROOT will assess the total values in a given SDU under a certain activity choice by combining the values from the corresponding baseline and activity impact potential rasters - it will assign the activity-specific values to pixels identifed as valid by the corresponding activity mask, and will assign the baseline values to all other pixels. In this way, it captures the change on the relevant pixels and the remaining baseline value on other pixels.</p></li>
+</ul>
+</section>
+</section>
+<section id="optimization">
+<h2><span class="section-number">4.3. </span>Optimization<a class="headerlink" href="#optimization" title="Permalink to this heading"></a></h2>
+<ul class="simple">
 <li><p><strong>Do optimization</strong>: If checked, ROOT performs the optimization step.</p></li>
 <li><p><strong>Optimization results suffix</strong>: By default, the results of an optimization run are stored in <code class="xref py py-attr docutils literal notranslate"><span class="pre">workspace/optimizations</span></code>. This field can be used to distinguish results from different runs. If a sufix is provided, the results will be saved to <code class="xref py py-attr docutils literal notranslate"><span class="pre">workspace/optimizations_suffix</span></code>.</p></li>
+</ul>
+<ul id="ig-optimization-analysis-type">
 <li><p><strong>Analysis type</strong>: Tells ROOT which of several optimization analyses to perform. Options are:</p>
 <blockquote>
 <div><ul class="simple">
@@ -358,6 +292,8 @@
 </div></blockquote>
 </li>
 <li><p><strong>Number of frontier points</strong>: Number of optimizations to run (only required for n_dim_frontier analyses)</p></li>
+</ul>
+<ul id="ig-objectives-table">
 <li><p><strong>Objectives table</strong>: This table identifies the factors to optimize for, and additional information depending on the analysis type. For both options, the column headers should be the names of the factors to treat as objectives. Any numeric column from the csv files in <code class="xref py py-attr docutils literal notranslate"><span class="pre">workspace/sdu_value_tables</span></code> can be used. In most cases, these will be the fields named in the tables from the preprocessing steps, although users are free to add additional columns to the SDU value tables containing data from other sources. Note that the columns must be added to the tables for all activities.</p>
 <blockquote>
 <div><p>The expected format for each analysis type is:</p>
@@ -415,6 +351,8 @@
 </ul>
 </div></blockquote>
 </li>
+</ul>
+<ul id="ig-targets-table">
 <li><p><strong>Targets table</strong>: Allows the user to set targets (constraints) for the optimizations. The table should have columns <code class="xref py py-attr docutils literal notranslate"><span class="pre">formula</span></code>, <code class="xref py py-attr docutils literal notranslate"><span class="pre">cons_type</span></code>, and <code class="xref py py-attr docutils literal notranslate"><span class="pre">value</span></code>.</p>
 <blockquote>
 <div><blockquote>
@@ -454,63 +392,38 @@
 </div></blockquote>
 </li>
 </ul>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="sample_data_walkthrough.html" class="btn btn-neutral float-right" title="4. Sample data walkthrough" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="workflow.html" class="btn btn-neutral float-left" title="2. ROOT Workflow" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="workflow.html" class="btn btn-neutral float-left" title="3. ROOT Workflow" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="sample_data_walkthrough.html" class="btn btn-neutral float-right" title="5. Sample data walkthrough" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        
-        &copy; Copyright 2018, Peter Hawthorne
-
-    </p>
+    <p>&#169; Copyright 2022, Peter Hawthorne.</p>
   </div>
-    
-    
-    
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>
