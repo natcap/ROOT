@@ -70,6 +70,8 @@ def parse_args(ui_args):
     root_args['baseline_file'] = 'baseline.csv'
     root_args['sdu_id_col'] = 'SDU_ID'
 
+    raster_table = None  # will be overwritten in "do_preprocessing" step but stay None if that is skipped
+
     if ui_args['do_preprocessing']:
 
         validate_activity_mask_table(ui_args['activity_mask_table_path'])
@@ -137,7 +139,9 @@ def parse_args(ui_args):
         validate_objectives_and_constraints_tables(
             ui_args['objectives_table_path'],
             ui_args['targets_table_path'],
-            ui_args['workspace_dir']
+            ui_args['workspace_dir'],
+            raster_table,
+            root_args["combined_factors"]
         )
 
         # some fixed vals
@@ -199,7 +203,7 @@ def _process_activity_mask_table(amtpath):
     :return:
     """
     amtdict = {}
-    with open(amtpath, 'rU') as f:
+    with open(amtpath, 'r') as f:
         f.readline()  # discard header
         for row in f:
             row_fields = [f.strip() for f in row.split(',')]
@@ -471,11 +475,23 @@ def validate_cft_table(rt_path, st_path, cft_path):
         raise RootInputError(msg)
 
 
-def validate_objectives_and_constraints_tables(obj_table_file, cons_table_file, workspace):
-    baseline_sdu_stats_file = os.path.join(workspace, 'sdu_value_tables', 'baseline.csv')
-    with open(baseline_sdu_stats_file) as f:
-        header_row = f.readline().strip()
-        factors = header_row.split(',')
+def validate_objectives_and_constraints_tables(obj_table_file, cons_table_file, workspace, raster_table, combined_factors):
+
+    if raster_table is not None:
+        # the case where we ran the preprocessing step
+        factors = raster_table.factor_names + list(combined_factors.keys()) + \
+            [f"{a}_ha" for a in raster_table.activity_names]
+        print(f"factors: {factors}")
+    else:
+        # this is the case if we are skipping the preprocessing step, which means that we
+        # should already have generated the required files
+        baseline_sdu_stats_file = os.path.join(workspace, 'sdu_value_tables', 'baseline.csv')
+        if not os.path.isfile(baseline_sdu_stats_file):
+            msg = f"Missing {baseline_sdu_stats_file}. Do you need to run preprocessing?"
+            raise RootInputError(msg)
+        with open(baseline_sdu_stats_file) as f:
+            header_row = f.readline().strip()
+            factors = header_row.split(',')
 
     # check objectives table:
     with open(obj_table_file) as f:

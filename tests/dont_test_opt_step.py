@@ -4,7 +4,7 @@ Generated: Fri Apr 20 14:49:39 2018
 InVEST version: 3.3.3
 """
 
-from natcap.root import root
+from natcap.root import rootcore
 
 
 args = {
@@ -26,4 +26,4 @@ args = {
 }
 
 if __name__ == '__main__':
-    root.execute(args)
+    rootcore.execute(args)
