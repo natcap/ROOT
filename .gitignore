@@ -1,8 +1,13 @@
 .DS_Store
 deprecated_code/
 **/__pycache__/
-sample_*/
 docsrc/_build/
 *.pyc
 .vscode
 build/
+.eggs/
+*.egg-info
+activity_mask_rasters/
+impact_potential_rasters/
+spatial_weighting_maps/
+test_workspace/
