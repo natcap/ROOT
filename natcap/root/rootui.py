@@ -209,7 +209,7 @@ def execute(args):
 
     """
     LOGGER.info(f'Running ROOT version {__version__}')
-    internal_args = parse_args(args)
+    internal_args = rootcore.parse_args(args)
 
     # with open(os.path.join(internal_args['workspace'], 'root_args.json'), 'w') as root_args_file:
     #     json.dump(internal_args, root_args_file, indent=2)

@@ -16,7 +16,7 @@ def raster_table():
 def test_parse_args():
     args_file = "tests/test_data/correct_ui_args_example.json"
     ui_args = json.load(open(args_file, "r"))["args"]
-    rootcore.parse_args(ui_args)
+    internal_args = rootcore.parse_args(ui_args)
 
 
 def test_process_raster_table(raster_table):

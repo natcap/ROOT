@@ -21,10 +21,8 @@ from natcap.root import arith_parser as ap
 LOGGER = logging.getLogger(__name__)
 
 
-
 class RootInputError(Exception):
     pass
-
 
 
 def execute(args):

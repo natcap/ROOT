@@ -921,7 +921,7 @@ def _create_overlapping_activity_mask(mask_path_list, target_file,
         ref_info['pixel_size'], bounding_box_mode=ref_info['bounding_box'])
 
     def all_pixels_have_value(*vals):
-        pixels_with_complete_overlap = numpy.ones(vals[0].shape, dtype=numpy.bool)
+        pixels_with_complete_overlap = numpy.ones(vals[0].shape, dtype=bool)
         # pixels_with_complete_overlap[:] = 1  # assume all valid
 
         print(pixels_with_complete_overlap.shape)
