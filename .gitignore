@@ -6,3 +6,5 @@ docsrc/_build/
 *.pyc
 .vscode
 build/
+.eggs/
+*.egg-info
