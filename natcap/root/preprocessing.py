@@ -166,13 +166,13 @@ def execute(args):
             _clean_negative_nodata_values(mv_path, f_reg[mv_id])
             clean_raster_file_lookup[mv_id] = f_reg[mv_id]
         if activity == "baseline":
-            baseline_raster_file_lookup = baseline_raster_file_lookup
+            baseline_raster_file_lookup = clean_raster_file_lookup["baseline"]
 
 
         print('STEP: Aggregate Value Rasters to SDU')
         marginal_value_lookup = _aggregate_marginal_values(
             f_reg['sdu_grid'], args['sdu_id_col'], mask_path, clean_raster_file_lookup,
-            baseline_raster_file_lookup=baseline_raster_file_lookup)
+            baseline_raster_lookup=baseline_raster_file_lookup)
         if activity == "baseline":
             baseline_value_lookup = marginal_value_lookup
 
@@ -569,7 +569,7 @@ def _aggregate_marginal_values(
                 band.ReadAsArray(**block_offset) for band in baseline_value_bands]
         else:
             baseline_value_nodata_list = [None for _ in marginal_value_bands]
-            baseline_value_bands = [None for _ in marginal_value_bands]
+            baseline_value_blocks = [None for _ in marginal_value_bands]
         
         mask_block = mask_band.ReadAsArray(**block_offset)
         for aggregate_id in np.unique(id_block):
