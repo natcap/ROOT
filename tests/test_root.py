@@ -1,4 +1,5 @@
 import pytest
+import json
 
 from natcap.root import rootcore
 
@@ -10,6 +11,12 @@ from natcap.root import rootcore
 def raster_table():
     rt = rootcore._process_raster_table('tests/test_data/test_raster_table.csv')
     return rt
+
+
+def test_parse_args():
+    args_file = "tests/test_data/correct_ui_args_example.json"
+    ui_args = json.load(open(args_file, "r"))["args"]
+    rootcore.parse_args(ui_args)
 
 
 def test_process_raster_table(raster_table):

@@ -1,0 +1,2 @@
+name,file_path,weight_col
+popchars,tests/test_data/sample_data/spatial_weighting_maps/pop_chars.shp,prop_poor prop_dep_o
