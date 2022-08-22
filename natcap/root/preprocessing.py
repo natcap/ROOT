@@ -112,11 +112,7 @@ def execute(args):
     # Create merged activity mask
     mask_path_list = list(args['activity_masks'].values())
     all_activity_mask = os.path.join(args['workspace'], 'all_activity_mask.tif')
-    aligned_masks_dir = os.path.join(args['workspace'], 'aligned_masks')
-    if not os.path.exists(aligned_masks_dir):
-        os.makedirs(aligned_masks_dir)
-    _create_overlapping_activity_mask(mask_path_list, all_activity_mask,
-                                      aligned_masks_dir)
+    _create_overlapping_activity_mask(mask_path_list, all_activity_mask)
 
     # Creating or copying SDU shapefile
     if args['grid_type'] in ['square', 'hexagon']:
@@ -510,29 +506,24 @@ def _aggregate_marginal_values(
 
     print('marginal_value_lookup: {}'.format(marginal_value_raster_lookup))
     marginal_value_ids = marginal_value_raster_lookup.keys()
+
+    # rasterize the SDU shapefile
     with tempfile.NamedTemporaryFile(dir='.', delete=False) as id_raster_file:
         id_raster_path = id_raster_file.name
-
     id_nodata = -1
     pygeoprocessing.new_raster_from_base(
         marginal_value_raster_lookup[list(marginal_value_ids)[0]], id_raster_path,
         gdal.GDT_Int32, band_nodata_list=[id_nodata],
         fill_value_list=[id_nodata])
 
-    id_raster = gdal.Open(id_raster_path, gdal.GA_Update)
-    mask_raster = gdal.Open(mask_raster_path)
-    mask_band = mask_raster.GetRasterBand(1)
-    mask_nodata = mask_band.GetNoDataValue()
-    geotransform = mask_raster.GetGeoTransform()
-    # note: i'm assuming square pixels that are aligned NS and EW and
-    # projected in meters as linear units
-    pixel_area_m2 = float((geotransform[1]) ** 2)
-
     vector = ogr.Open(sdu_grid_path, 1)  # open for reading
     layer = vector.GetLayer()
+    id_raster = gdal.Open(id_raster_path, gdal.GA_Update)
     gdal.RasterizeLayer(
         id_raster, [1], layer, options=['ATTRIBUTE=%s' % sdu_key_id])
     id_raster = None
+    
+    
     marginal_value_rasters = [
         gdal.Open(marginal_value_raster_lookup[marginal_value_id])
         for marginal_value_id in marginal_value_ids]
@@ -549,6 +540,15 @@ def _aggregate_marginal_values(
             raster.GetRasterBand(1) for raster in baseline_value_rasters]
         baseline_value_nodata_list = [
             band.GetNoDataValue() for band in baseline_value_bands]
+
+    mask_raster = gdal.Open(mask_raster_path)
+    mask_band = mask_raster.GetRasterBand(1)
+    mask_nodata = mask_band.GetNoDataValue()
+    geotransform = mask_raster.GetGeoTransform()
+    # note: i'm assuming square pixels that are aligned NS and EW and
+    # projected in meters as linear units
+    pixel_area_m2 = float((geotransform[1]) ** 2)
+
 
     # first element in tuple is the coverage stats:
     # (sdu area, sdu pixel count, mask pixel count, mask pixel coverage in Ha)
@@ -572,6 +572,7 @@ def _aggregate_marginal_values(
             baseline_value_blocks = [None for _ in marginal_value_bands]
         
         mask_block = mask_band.ReadAsArray(**block_offset)
+        
         for aggregate_id in np.unique(id_block):
             if aggregate_id == id_nodata:
                 continue
@@ -606,6 +607,7 @@ def _aggregate_marginal_values(
                     np.count_nonzero(np.logical_and(
                         valid_mv_block != mv_nodata,
                         valid_mask_block != mask_nodata)))
+    
     # calculate SDU, mask coverage in Ha, and marginal value Ha coverage
     for sdu_id in marginal_value_sums:
         marginal_value_sums[sdu_id][0][0] = (
@@ -621,6 +623,7 @@ def _aggregate_marginal_values(
                         pixel_area_m2 / 10000.0))
             else:
                 marginal_value_sums[sdu_id][1][mv_id][2] = 0.0
+    
     del marginal_value_bands[:]
     del marginal_value_rasters[:]
     mask_band = None
@@ -932,56 +935,26 @@ def _copy_sdu_file(source, dest):
         shutil.copy(f, new_f)
 
 
-def _create_overlapping_activity_mask(mask_path_list, target_file,
-                                      aligned_paths_directory,
+def _create_overlapping_activity_mask(mask_path_list,
+                                      target_file,
                                       reference_mask=0):
-
-    # TODO: get nodata vals from each mask_path, make comparison against those instead of np.nan
-    # need them as closure in this function, zip with vals to line up
 
     mask_nodatas = [
         pygeoprocessing.get_raster_info(raster_path)['nodata'][0] for
         raster_path in mask_path_list]
 
+    def any_pixels_have_value(*vals):
+        valid_pix_arrays = [x != nd for x, nd in zip(vals, mask_nodatas)]
+        return np.any(valid_pix_arrays, axis=0)
+
     ref_info = pygeoprocessing.get_raster_info(mask_path_list[reference_mask])
-    # ref_info = pygeoprocessing.get_raster_info(mask_path_list[reference_mask])
-    ref_nodata = ref_info['nodata'][0]
-
-    # Align stack to the reference dataset's bounding box using
-    # nearest-neighbor interpolation.
-    aligned_mask_paths = [
-        os.path.join(aligned_paths_directory, f'aligned_mask_{index}.tif')
-        for index in range(len(mask_path_list))]
-    pygeoprocessing.align_and_resize_raster_stack(
-        mask_path_list, aligned_mask_paths, ['near']*len(mask_path_list),
-        ref_info['pixel_size'], bounding_box_mode=ref_info['bounding_box'])
-
-    def all_pixels_have_value(*vals):
-        pixels_with_complete_overlap = numpy.ones(vals[0].shape, dtype=bool)
-        # pixels_with_complete_overlap[:] = 1  # assume all valid
-
-        print(pixels_with_complete_overlap.shape)
-        print(vals)
-        for index, array in enumerate(vals):
-            print(array.shape)
-            print(mask_nodatas[index])
-            # numpy.isclose will work for floating-point and integer rasters,
-            # direct equality comparison will not.
-            pixels_with_complete_overlap &= numpy.isclose(
-                array, mask_nodatas[index])
-
-        output_array = numpy.full(pixels_with_complete_overlap.shape,
-                                  ref_nodata, dtype=ref_info['numpy_type'])
-        output_array[pixels_with_complete_overlap] = 1
-
-        return pixels_with_complete_overlap
 
     pygeoprocessing.raster_calculator(
-        [(path, 1) for path in aligned_mask_paths],
-        all_pixels_have_value,
+        [(path, 1) for path in mask_path_list],
+        any_pixels_have_value,
         target_file,
         ref_info['datatype'],
-        ref_nodata)
+        ref_info['nodata'][0])
 
 
 if __name__ == '__main__':
