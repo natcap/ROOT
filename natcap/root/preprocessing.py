@@ -125,9 +125,13 @@ def execute(args):
     else:
         print('invalid SDU grid argument: {}'.format(args['grid_type']))
     # TODO: do we want to clean up the polygons either way? or only for a regular grid?
-    print('STEP: Removing polygons that only cover nodata')
-    _remove_nonoverlapping_sdus(
-        f_reg['sdu_grid'], all_activity_mask, args['sdu_id_col'])
+    if "filter_sdu" in args and args["filter_sdu"] is True:
+        print('STEP: Removing polygons that only cover nodata')
+        _remove_nonoverlapping_sdus(
+            f_reg['sdu_grid'], all_activity_mask, args['sdu_id_col'])
+
+    f_reg['sdu_raster'] = _rasterize_sdus(
+        f_reg['sdu_grid'], args['sdu_id_col'], all_activity_mask, args['workspace'])
 
     # Calculate serviceshed coverage and average values
     print('STEP: Calculate SDU serviceshed coverage')
@@ -155,6 +159,7 @@ def execute(args):
         # raster cleaning
         print('INTERMEDIATE: cleaning marginal value rasters with large '
               'and corrupt negative nodata')
+        #TODO: remove this part - this was just to fix a particular set of rasters
         clean_raster_file_lookup = {}
         print('raster_table[activity]: {}'.format(raster_table[activity]))
         for mv_id, mv_path in raster_table[activity].items():
@@ -166,8 +171,8 @@ def execute(args):
 
 
         print('STEP: Aggregate Value Rasters to SDU')
-        marginal_value_lookup = _aggregate_marginal_values(
-            f_reg['sdu_grid'], args['sdu_id_col'], mask_path, clean_raster_file_lookup,
+        marginal_value_lookup = _aggregate_raster_values(
+            f_reg['sdu_raster'], f_reg['sdu_grid'], args['sdu_id_col'], mask_path, clean_raster_file_lookup,
             baseline_raster_lookup=baseline_raster_file_lookup)
         if activity == "baseline":
             baseline_value_lookup = marginal_value_lookup
@@ -469,8 +474,9 @@ def _clean_negative_nodata_values(
             data_block, xoff=block_offset['xoff'], yoff=block_offset['yoff'])
 
 
-def _aggregate_marginal_values(
-        sdu_grid_path, sdu_key_id, mask_raster_path, marginal_value_raster_lookup, baseline_raster_lookup=None):
+def _aggregate_raster_values(
+        sdu_raster_path, sdu_grid_path, sdu_key_id, mask_raster_path,
+        value_raster_lookup, baseline_raster_lookup=None):
     """Build table that indexes SDU ids with aggregated marginal values.
 
     Parameters:
@@ -480,10 +486,10 @@ def _aggregate_marginal_values(
             each feature.
         mask_raster_path (string): path to a mask raster whose pixels are
             considered "valid" if they are not nodata.
-        marginal_value_raster_lookup (dict): keys are marginal value IDs that
+        value_raster_lookup (dict): keys are marginal value IDs that
             will be used in the optimization table; values are paths to
             single band rasters.
-        baseline_raster_lookup (dict): same as `marginal_value_raster_lookup` but
+        baseline_raster_lookup (dict): same as `value_raster_lookup` but
             for the baseline rasters. Need this if calculating "merged" values.
 
     Returns:
@@ -504,38 +510,21 @@ def _aggregate_marginal_values(
     """
     # TODO: drop activity mask, get activity from the rasters - require nodata for non-transition pixels
 
-    print('marginal_value_lookup: {}'.format(marginal_value_raster_lookup))
-    marginal_value_ids = marginal_value_raster_lookup.keys()
+    print('marginal_value_lookup: {}'.format(value_raster_lookup))
+    value_ids = value_raster_lookup.keys()
 
-    # rasterize the SDU shapefile
-    with tempfile.NamedTemporaryFile(dir='.', delete=False) as id_raster_file:
-        id_raster_path = id_raster_file.name
-    id_nodata = -1
-    pygeoprocessing.new_raster_from_base(
-        marginal_value_raster_lookup[list(marginal_value_ids)[0]], id_raster_path,
-        gdal.GDT_Int32, band_nodata_list=[id_nodata],
-        fill_value_list=[id_nodata])
-
-    vector = ogr.Open(sdu_grid_path, 1)  # open for reading
-    layer = vector.GetLayer()
-    id_raster = gdal.Open(id_raster_path, gdal.GA_Update)
-    gdal.RasterizeLayer(
-        id_raster, [1], layer, options=['ATTRIBUTE=%s' % sdu_key_id])
-    id_raster = None
-    
-    
-    marginal_value_rasters = [
-        gdal.Open(marginal_value_raster_lookup[marginal_value_id])
-        for marginal_value_id in marginal_value_ids]
-    marginal_value_bands = [
-        raster.GetRasterBand(1) for raster in marginal_value_rasters]
-    marginal_value_nodata_list = [
-        band.GetNoDataValue() for band in marginal_value_bands]
+    value_rasters = [
+        gdal.Open(value_raster_lookup[value_id])
+        for value_id in value_ids]
+    value_bands = [
+        raster.GetRasterBand(1) for raster in value_rasters]
+    value_nodata_list = [
+        band.GetNoDataValue() for band in value_bands]
     
     if baseline_raster_lookup is not None:
         baseline_value_rasters = [
-            gdal.Open(baseline_raster_lookup[marginal_value_id])
-            for marginal_value_id in marginal_value_ids]
+            gdal.Open(baseline_raster_lookup[value_id])
+            for value_id in value_ids]
         baseline_value_bands = [
             raster.GetRasterBand(1) for raster in baseline_value_rasters]
         baseline_value_nodata_list = [
@@ -549,27 +538,32 @@ def _aggregate_marginal_values(
     # projected in meters as linear units
     pixel_area_m2 = float((geotransform[1]) ** 2)
 
+    id_raster = gdal.Open(sdu_raster_path)
+    id_band = id_raster.GetRasterBand(1)
+    id_nodata = id_band.GetNoDataValue()
+    id_band = None
+    id_raster = None
 
     # first element in tuple is the coverage stats:
     # (sdu area, sdu pixel count, mask pixel count, mask pixel coverage in Ha)
     # second element 3 element list (aggregate sum, pixel count, sum/Ha)
-    marginal_value_sums = collections.defaultdict(
+    value_sums = collections.defaultdict(
         lambda: (
             [0.0, 0, 0, 0.0],
-            dict((mv_id, [0.0, 0, None]) for mv_id in marginal_value_ids)))
+            dict((mv_id, [0.0, 0, None]) for mv_id in value_ids)))
 
     # format of sdu_coverage is:
     # (sdu area, sdu pixel count, mask pixel count, mask pixel coverage in Ha)
     for block_offset, id_block in pygeoprocessing.iterblocks(
-            (id_raster_path, 1)):
-        marginal_value_blocks = [
-            band.ReadAsArray(**block_offset) for band in marginal_value_bands]
+            (sdu_raster_path, 1)):
+        value_blocks = [
+            band.ReadAsArray(**block_offset) for band in value_bands]
         if baseline_raster_lookup is not None:
             baseline_value_blocks = [
                 band.ReadAsArray(**block_offset) for band in baseline_value_bands]
         else:
-            baseline_value_nodata_list = [None for _ in marginal_value_bands]
-            baseline_value_blocks = [None for _ in marginal_value_bands]
+            baseline_value_nodata_list = [None for _ in value_bands]
+            baseline_value_blocks = [None for _ in value_bands]
         
         mask_block = mask_band.ReadAsArray(**block_offset)
         
@@ -578,142 +572,57 @@ def _aggregate_marginal_values(
                 continue
             aggregate_mask = id_block == aggregate_id
             # update sdu pixel coverage
-            # marginal_value_sums[aggregate_id][0] =
+            # value_sums[aggregate_id][0] =
             #    (sdu area, sdu pixel count, mask pixel count, mask pixel Ha)
-            marginal_value_sums[aggregate_id][0][1] += np.count_nonzero(
+            value_sums[aggregate_id][0][1] += np.count_nonzero(
                 aggregate_mask)
             valid_mask_block = mask_block[aggregate_mask]
-            marginal_value_sums[aggregate_id][0][2] += np.count_nonzero(
+            value_sums[aggregate_id][0][2] += np.count_nonzero(
                 valid_mask_block != mask_nodata)
             for mv_id, mv_nodata, mv_block, base_nodata, base_block in zip(
-                    marginal_value_ids, marginal_value_nodata_list,
-                    marginal_value_blocks, baseline_value_nodata_list, baseline_value_blocks):
+                    value_ids, value_nodata_list,
+                    value_blocks, baseline_value_nodata_list, baseline_value_blocks):
                 valid_mv_block = mv_block[aggregate_mask]
                 # raw aggregation of marginal value
-                # marginal_value_sums[aggregate_id][1][mv_id] =
+                # value_sums[aggregate_id][1][mv_id] =
                 # (sum, pixel count, pixel Ha)
-                marginal_value_sums[aggregate_id][1][mv_id][0] += np.nansum(
+                value_sums[aggregate_id][1][mv_id][0] += np.nansum(
                     valid_mv_block[np.logical_and(
                         valid_mv_block != mv_nodata,
                         valid_mask_block != mask_nodata)])
                 if base_block is not None:
-                    marginal_value_sums[aggregate_id][1][mv_id][0] += np.nansum(
+                    value_sums[aggregate_id][1][mv_id][0] += np.nansum(
                         base_block[np.logical_and(
                             base_block != base_nodata,
                             valid_mask_block == mask_nodata)])
 
                 # pixel count coverage of marginal value
-                marginal_value_sums[aggregate_id][1][mv_id][1] += (
+                value_sums[aggregate_id][1][mv_id][1] += (
                     np.count_nonzero(np.logical_and(
                         valid_mv_block != mv_nodata,
                         valid_mask_block != mask_nodata)))
     
     # calculate SDU, mask coverage in Ha, and marginal value Ha coverage
-    for sdu_id in marginal_value_sums:
-        marginal_value_sums[sdu_id][0][0] = (
-            marginal_value_sums[sdu_id][0][1] * pixel_area_m2 / 10000.0)
-        marginal_value_sums[sdu_id][0][3] = (
-            marginal_value_sums[sdu_id][0][2] * pixel_area_m2 / 10000.0)
+    for sdu_id in value_sums:
+        value_sums[sdu_id][0][0] = (
+            value_sums[sdu_id][0][1] * pixel_area_m2 / 10000.0)
+        value_sums[sdu_id][0][3] = (
+            value_sums[sdu_id][0][2] * pixel_area_m2 / 10000.0)
         # calculate the 3rd tuple of marginal value per Ha
-        for mv_id in marginal_value_sums[sdu_id][1]:
-            if marginal_value_sums[sdu_id][1][mv_id][1] != 0:
-                marginal_value_sums[sdu_id][1][mv_id][2] = (
-                    marginal_value_sums[sdu_id][1][mv_id][0] / (
-                        marginal_value_sums[sdu_id][1][mv_id][1] *
+        for mv_id in value_sums[sdu_id][1]:
+            if value_sums[sdu_id][1][mv_id][1] != 0:
+                value_sums[sdu_id][1][mv_id][2] = (
+                    value_sums[sdu_id][1][mv_id][0] / (
+                        value_sums[sdu_id][1][mv_id][1] *
                         pixel_area_m2 / 10000.0))
             else:
-                marginal_value_sums[sdu_id][1][mv_id][2] = 0.0
+                value_sums[sdu_id][1][mv_id][2] = 0.0
     
-    del marginal_value_bands[:]
-    del marginal_value_rasters[:]
+    del value_bands[:]
+    del value_rasters[:]
     mask_band = None
     mask_raster = None
-    os.remove(id_raster_path)
-    return marginal_value_sums
-
-
-def _remove_nonoverlapping_sdus(vector_path, mask_raster_path, key_id_field):
-    """Remove polygons in `vector_path` that don't overlap valid data.
-
-    Parameters:
-        vector_path (string): path to a single layer polygon shapefile
-            that has a  unique key field named `key_id_field`.  This function
-            modifies this polygon to remove any polygons.
-        make_raster_path (string): path to a mask raster; polygons in
-            `vector_path` that only overlap nodata pixels will be removed.
-        key_id_field (string): name of key id field in the polygon vector.
-
-    Returns:
-        None.
-    """
-    with tempfile.NamedTemporaryFile(dir='.', delete=False) as id_raster_file:
-        id_raster_path = id_raster_file.name
-
-    pygeoprocessing.new_raster_from_base(
-        mask_raster_path, id_raster_path, gdal.GDT_Int32,
-        band_nodata_list=[-1], fill_value_list=[-1])
-
-    id_raster = gdal.Open(id_raster_path, gdal.GA_Update)
-
-    tmp_vector_dir = tempfile.mkdtemp()
-    vector_basename = os.path.basename(vector_path)
-    vector_driver = ogr.GetDriverByName("ESRI Shapefile")
-    base_vector = ogr.Open(vector_path)
-    vector = vector_driver.CopyDataSource(
-        base_vector, os.path.join(tmp_vector_dir, vector_basename))
-    base_vector = None
-    layer = vector.GetLayer()
-
-    gdal.RasterizeLayer(
-        id_raster, [1], layer, options=['ATTRIBUTE=%s' % key_id_field])
-    id_band = id_raster.GetRasterBand(1)
-    mask_nodata = pygeoprocessing.get_raster_info(
-        mask_raster_path)['nodata'][0]
-    covered_ids = set()
-    for mask_offset, mask_block in pygeoprocessing.iterblocks(
-            (mask_raster_path, 1)):
-        id_block = id_band.ReadAsArray(**mask_offset)
-        valid_mask = mask_block != mask_nodata
-        covered_ids.update(np.unique(id_block[valid_mask]))
-
-    # cleanup the ID raster since we're done with it
-    id_band = None
-    id_raster = None
-    os.remove(id_raster_path)
-
-    # now it's sufficient to check if the min value on each feature is defined
-    # if so there are valid pixels underneath, otherwise none.
-    for feature in layer:
-        feature_id = feature.GetField(str(key_id_field))
-        if feature_id not in covered_ids:
-            layer.DeleteFeature(feature.GetFID())
-
-    print('INFO: Packing Target SDU Grid')
-    # remove target vector and create a new one in its place with same layer
-    # and fields
-    os.remove(vector_path)
-    target_vector = vector_driver.CreateDataSource(vector_path)
-    spatial_ref = osr.SpatialReference(layer.GetSpatialRef().ExportToWkt())
-    target_layer = target_vector.CreateLayer(
-        str(os.path.splitext(vector_basename)[0]),
-        spatial_ref, ogr.wkbPolygon)
-    layer_defn = layer.GetLayerDefn()
-    for index in range(layer_defn.GetFieldCount()):
-        field_defn = layer_defn.GetFieldDefn(index)
-        field_defn.SetWidth(24)
-        target_layer.CreateField(field_defn)
-
-    # copy over undeleted features
-    layer.ResetReading()
-    for feature in layer:
-        target_layer.CreateFeature(feature)
-    target_layer = None
-    target_vector = None
-    layer = None
-    vector = None
-
-    # remove unpacked vector
-    shutil.rmtree(tmp_vector_dir)
+    return value_sums
 
 
 def _grid_vector_across_raster(
@@ -840,6 +749,110 @@ def _grid_vector_across_raster(
                 str(sdu_id_fieldname), row_index * n_cols + col_index)
             grid_layer.CreateFeature(poly_feature)
     grid_layer.SyncToDisk()
+
+
+def _remove_nonoverlapping_sdus(vector_path, mask_raster_path, key_id_field):
+    """Remove polygons in `vector_path` that don't overlap valid data.
+
+    Parameters:
+        vector_path (string): path to a single layer polygon shapefile
+            that has a  unique key field named `key_id_field`.  This function
+            modifies this polygon to remove any polygons.
+        make_raster_path (string): path to a mask raster; polygons in
+            `vector_path` that only overlap nodata pixels will be removed.
+        key_id_field (string): name of key id field in the polygon vector.
+
+    Returns:
+        None.
+    """
+    with tempfile.NamedTemporaryFile(dir='.', delete=False) as id_raster_file:
+        id_raster_path = id_raster_file.name
+
+    pygeoprocessing.new_raster_from_base(
+        mask_raster_path, id_raster_path, gdal.GDT_Int32,
+        band_nodata_list=[-1], fill_value_list=[-1])
+
+    id_raster = gdal.Open(id_raster_path, gdal.GA_Update)
+
+    tmp_vector_dir = tempfile.mkdtemp()
+    vector_basename = os.path.basename(vector_path)
+    vector_driver = ogr.GetDriverByName("ESRI Shapefile")
+    base_vector = ogr.Open(vector_path)
+    vector = vector_driver.CopyDataSource(
+        base_vector, os.path.join(tmp_vector_dir, vector_basename))
+    base_vector = None
+    layer = vector.GetLayer()
+
+    gdal.RasterizeLayer(
+        id_raster, [1], layer, options=['ATTRIBUTE=%s' % key_id_field])
+    id_band = id_raster.GetRasterBand(1)
+    mask_nodata = pygeoprocessing.get_raster_info(
+        mask_raster_path)['nodata'][0]
+    covered_ids = set()
+    for mask_offset, mask_block in pygeoprocessing.iterblocks(
+            (mask_raster_path, 1)):
+        id_block = id_band.ReadAsArray(**mask_offset)
+        valid_mask = mask_block != mask_nodata
+        covered_ids.update(np.unique(id_block[valid_mask]))
+
+    # cleanup the ID raster since we're done with it
+    id_band = None
+    id_raster = None
+    os.remove(id_raster_path)
+
+    # now it's sufficient to check if the min value on each feature is defined
+    # if so there are valid pixels underneath, otherwise none.
+    for feature in layer:
+        feature_id = feature.GetField(str(key_id_field))
+        if feature_id not in covered_ids:
+            layer.DeleteFeature(feature.GetFID())
+
+    print('INFO: Packing Target SDU Grid')
+    # remove target vector and create a new one in its place with same layer
+    # and fields
+    os.remove(vector_path)
+    target_vector = vector_driver.CreateDataSource(vector_path)
+    spatial_ref = osr.SpatialReference(layer.GetSpatialRef().ExportToWkt())
+    target_layer = target_vector.CreateLayer(
+        str(os.path.splitext(vector_basename)[0]),
+        spatial_ref, ogr.wkbPolygon)
+    layer_defn = layer.GetLayerDefn()
+    for index in range(layer_defn.GetFieldCount()):
+        field_defn = layer_defn.GetFieldDefn(index)
+        field_defn.SetWidth(24)
+        target_layer.CreateField(field_defn)
+
+    # copy over undeleted features
+    layer.ResetReading()
+    for feature in layer:
+        target_layer.CreateFeature(feature)
+    target_layer = None
+    target_vector = None
+    layer = None
+    vector = None
+
+    # remove unpacked vector
+    shutil.rmtree(tmp_vector_dir)
+
+
+def _rasterize_sdus(sdu_grid_path, sdu_key_id, reference_raster, workspace):
+    # rasterize the SDU shapefile
+    # with tempfile.NamedTemporaryFile(dir='.', delete=False) as id_raster_file:
+    #     id_raster_path = id_raster_file.name
+    id_raster_path = os.path.join(workspace, "sdu_grid.tif")
+    id_nodata = -1
+    pygeoprocessing.new_raster_from_base(
+        reference_raster, id_raster_path,
+        gdal.GDT_Int32, band_nodata_list=[id_nodata],
+        fill_value_list=[id_nodata])
+
+    vector = ogr.Open(sdu_grid_path, 1)  # open for reading
+    layer = vector.GetLayer()
+    id_raster = gdal.Open(id_raster_path, gdal.GA_Update)
+    gdal.RasterizeLayer(
+        id_raster, [1], layer, options=['ATTRIBUTE=%s' % sdu_key_id])
+    id_raster = None
+    return id_raster_path
 
 
 def _assert_inputs_same_size_and_srs(raster_path_list, shapefile_path_list):
