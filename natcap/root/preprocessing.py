@@ -981,8 +981,9 @@ def _create_value_tables_for_activity(
     activity_name,
     target_folder,
     mask_raster_path=None,
-    nonmasked_raster_lookup=None,
-    calc_area_for_activity=None):
+    fill_raster_lookup=None,
+    calc_area_for_activity=None,
+    sdu_id_column="SDU_ID"):
     """
     Reimplementation of `_aggregate_raster_values` and `_create_ip_table` that combines their functionality
     by skipping the intermediate data structure and adding the values directly into a pandas `DataFrame`.
@@ -1011,7 +1012,7 @@ def _create_value_tables_for_activity(
 
 
     # INITIALIZE THE DATAFRAME
-    sdu_ids = _get_sdu_list(sdu_grid_path)
+    sdu_ids = _get_sdu_list(sdu_grid_path, sdu_id_column=sdu_id_column)
     value_ids = value_raster_lookup.keys()
     df = pd.DataFrame(index=sdu_ids)
 
@@ -1036,12 +1037,17 @@ def _create_value_tables_for_activity(
     geotransform = sdu_raster.GetGeoTransform()
     # note: i'm assuming square pixels that are aligned NS and EW and
     # projected in meters as linear units
-    pixel_area_m2 = float((geotransform[1]) ** 2)
+    pixel_area_ha = float((geotransform[1]) ** 2) / 10000
 
     if mask_raster_path is not None:
         mask_raster = gdal.Open(mask_raster_path)
         mask_band = mask_raster.GetRasterBand(1)
         mask_nodata = mask_band.GetNoDataValue()
+
+    if fill_raster_lookup is not None:
+        fill_rasters = [gdal.Open(fill_raster_lookup[vid]) for vid in value_ids]
+        fill_bands = [raster.GetRasterBand(1) for raster in fill_rasters]
+        fill_nodata_values = [band.GetNoDataValue() for band in fill_bands]
 
     # LOOP THROUGH THE BLOCKS
     for block_offset, sdu_block in pygeoprocessing.iterblocks(
@@ -1054,6 +1060,8 @@ def _create_value_tables_for_activity(
 
         if mask_raster_path is not None:
             mask_block = mask_band.ReadAsArray(**block_offset)
+        if fill_raster_lookup is not None:
+            fill_blocks = [band.ReadAsArray(**block_offset) for band in fill_bands]
 
         for sdu in np.unique(sdu_block):
             # loop through each SDU ID that appears in this block
@@ -1061,22 +1069,32 @@ def _create_value_tables_for_activity(
                 continue
             
             sdu_pix = sdu_block == sdu
+            df.loc[sdu, "pixel_count"] += np.sum(sdu_pix)
 
             if mask_raster_path is None:
                 # case 1 - add up all values
-                df.loc[sdu, "pixel_count"] += np.sum(sdu_pix)
                 if calc_area_for_activity is not None:
-                    df.loc[sdu, f"{calc_area_for_activity}_ha"] += np.sum(sdu_pix)
+                    df.loc[sdu, f"{calc_area_for_activity}_ha"] += np.sum(sdu_pix) * pixel_area_ha
                 for vid, vb in zip(value_ids, value_blocks):
                     df.loc[sdu, vid] += np.sum(vb[sdu_pix])
-                pass
-            elif mask_raster_path is not None and nonmasked_raster_lookup is None:
+            elif mask_raster_path is not None and fill_raster_lookup is None:
                 # case 2
-                pass
+                print(f"sdu_pix: {sdu_pix.shape}")
+                print(f"mask_block: {mask_block.shape}")
+                mask_pix = np.all([sdu_pix, mask_block != mask_nodata], axis=0)
+                if calc_area_for_activity is not None:
+                    df.loc[sdu, f"{calc_area_for_activity}_ha"] += np.sum(mask_pix) * pixel_area_ha
+                for vid, vb in zip(value_ids, value_blocks):
+                    df.loc[sdu, vid] += np.sum(vb[mask_pix])
             else:
                 # case 3
-                pass
-
+                mask_pix = np.all([sdu_pix, mask_block != mask_nodata], axis=0)
+                if calc_area_for_activity is not None:
+                    df.loc[sdu, f"{calc_area_for_activity}_ha"] += np.sum(mask_pix) * pixel_area_ha
+                for vid, vb, fb, fnd in zip(value_ids, value_blocks, fill_blocks, fill_nodata_values):
+                    df.loc[sdu, vid] += np.sum(vb[mask_pix])
+                    fill_pix = np.all([sdu_pix, mask_block != mask_nodata, fb != fnd], axis=0)
+                    df.loc[sdu, vid] += np.sum(fb[fill_pix])
             
     table_file = os.path.join(target_folder, f"{activity_name}.csv")
     df.to_csv(table_file)

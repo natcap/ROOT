@@ -364,7 +364,7 @@ def validate_activity_names_in_amt_and_iprt(amt_path, iprt_path):
         if a not in iprt_activities:
             match = False
     for a in iprt_activities:
-        if a not in amt_activities:
+        if a not in amt_activities and a != "baseline":
             match = False
     if match is False:
         msg = "Error: activities do not match in Activity Mask table and Impact Potential Raster table. Please check spelling and missing/extra values: {} vs {}".format(amt_activities, iprt_activities)
@@ -372,6 +372,9 @@ def validate_activity_names_in_amt_and_iprt(amt_path, iprt_path):
 
 
 def validate_shapefile_input_table(shapefile_table_path):
+    if shapefile_table_path is None or len(shapefile_table_path) == 0:
+        return
+
     table = pd.read_csv(shapefile_table_path)
 
     # check columns are correct
@@ -428,7 +431,7 @@ def validate_cft_table(rt_path, st_path, cft_path):
     Returns:
 
     """
-    if len(cft_path) == 0:
+    if cft_path is None or len(cft_path) == 0:
         return
     cft = pd.read_csv(cft_path)
 
