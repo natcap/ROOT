@@ -169,7 +169,7 @@ def execute(args):
         if activity == "baseline":
             baseline_raster_file_lookup = clean_raster_file_lookup["baseline"]
 
-
+        # AGGREGATE THE RASTERS        
         print('STEP: Aggregate Value Rasters to SDU')
         marginal_value_lookup = _aggregate_raster_values(
             f_reg['sdu_raster'], f_reg['sdu_grid'], args['sdu_id_col'], mask_path, clean_raster_file_lookup,
@@ -177,15 +177,18 @@ def execute(args):
         if activity == "baseline":
             baseline_value_lookup = marginal_value_lookup
 
+        # UNPACK MARGINAL VALUE LOOKUP TO TABLE
         print('STEP: Create IP table')
         _build_ip_table(
             args['sdu_id_col'], activities, activity, marginal_value_lookup,
             sdu_serviceshed_coverage, table_file)
 
+        # ADD COMBINED FACTORS TO TABLE
         print('Step: Add combined factors')
         if 'combined_factors' in args and args['combined_factors'] is not None:
             _add_combined_factors(table_file, args['combined_factors'])
 
+    # MAKE DUMMY BASELINE TABLE IF NEEDED
     if "baseline" not in activities:
         print('STEP: Create baseline table')
         baseline_value_lookup = marginal_value_lookup.copy()
@@ -968,6 +971,131 @@ def _create_overlapping_activity_mask(mask_path_list,
         target_file,
         ref_info['datatype'],
         ref_info['nodata'][0])
+
+
+def _create_value_tables_for_activity(
+    sdu_raster_path,
+    sdu_grid_path,
+    value_raster_lookup, 
+    activity_list,
+    activity_name,
+    target_folder,
+    mask_raster_path=None,
+    nonmasked_raster_lookup=None,
+    calc_area_for_activity=None):
+    """
+    Reimplementation of `_aggregate_raster_values` and `_create_ip_table` that combines their functionality
+    by skipping the intermediate data structure and adding the values directly into a pandas `DataFrame`.
+
+    Here are the different cases we need to cover:
+    1) Simple summation by SDU: this is the case for the baseline values, for example. We
+       don't need to apply the mask, just sum the pixels in each of the value rasters
+       according to the SDU mask.
+    2) Masked sum: in this case, we only sum the values in pixels indicated by the mask raster.
+       Other pixels are ignored. Do this if `mask_raster_path` is not `None` and 
+       `nonmasked_raster_lookup` is `None.
+    3) Masked sum with fill values: here we sum the values from `value_raster_lookup` where the
+       mask indicates, and then sum values from `nonmasked_raster_lookup` elsewhere. In this case, 
+       we do need to be careful to have appropriately masked to the AOI. 
+
+    TODO: add serviceshed weights
+
+    ! NOTE: Need to pass in the baseline here if we have it so that we can grab
+    the values from the baseline for pixels that aren't in the activity mask
+    """
+
+    if not os.path.isfile(sdu_raster_path):
+        raise ValueError(f"sdu_raster_path {sdu_raster_path} not found")
+    if not os.path.isfile(sdu_grid_path):
+        raise ValueError(f"sdu_grid_path {sdu_grid_path} not found")
+
+
+    # INITIALIZE THE DATAFRAME
+    sdu_ids = _get_sdu_list(sdu_grid_path)
+    value_ids = value_raster_lookup.keys()
+    df = pd.DataFrame(index=sdu_ids)
+
+    columns = ["SDU_ID", "pixel_count", "area_ha", "exclude"]
+    columns.extend([f"{activity}_ha" for activity in activity_list])
+    columns.extend(value_ids)
+    for col in columns:
+        df[col] = 0
+    
+    # PREP THE RASTERS TO READ
+    value_rasters = [
+        gdal.Open(value_raster_lookup[value_id])
+        for value_id in value_ids]
+    value_bands = [
+        raster.GetRasterBand(1) for raster in value_rasters]
+    value_nodata_list = [
+        band.GetNoDataValue() for band in value_bands]
+
+    sdu_raster = gdal.Open(sdu_raster_path)
+    sdu_band = sdu_raster.GetRasterBand(1)
+    sdu_nodata = sdu_band.GetNoDataValue()
+    geotransform = sdu_raster.GetGeoTransform()
+    # note: i'm assuming square pixels that are aligned NS and EW and
+    # projected in meters as linear units
+    pixel_area_m2 = float((geotransform[1]) ** 2)
+
+    if mask_raster_path is not None:
+        mask_raster = gdal.Open(mask_raster_path)
+        mask_band = mask_raster.GetRasterBand(1)
+        mask_nodata = mask_band.GetNoDataValue()
+
+    # LOOP THROUGH THE BLOCKS
+    for block_offset, sdu_block in pygeoprocessing.iterblocks(
+        (sdu_raster_path, 1)):
+        value_blocks = [
+            band.ReadAsArray(**block_offset) for band in value_bands]
+        
+        # for i, nd in enumerate(value_nodata_list):
+        #     value_blocks[i][value_blocks[i] == nd] = 0
+
+        if mask_raster_path is not None:
+            mask_block = mask_band.ReadAsArray(**block_offset)
+
+        for sdu in np.unique(sdu_block):
+            # loop through each SDU ID that appears in this block
+            if sdu == sdu_nodata:
+                continue
+            
+            sdu_pix = sdu_block == sdu
+
+            if mask_raster_path is None:
+                # case 1 - add up all values
+                df.loc[sdu, "pixel_count"] += np.sum(sdu_pix)
+                if calc_area_for_activity is not None:
+                    df.loc[sdu, f"{calc_area_for_activity}_ha"] += np.sum(sdu_pix)
+                for vid, vb in zip(value_ids, value_blocks):
+                    df.loc[sdu, vid] += np.sum(vb[sdu_pix])
+                pass
+            elif mask_raster_path is not None and nonmasked_raster_lookup is None:
+                # case 2
+                pass
+            else:
+                # case 3
+                pass
+
+            
+    table_file = os.path.join(target_folder, f"{activity_name}.csv")
+    df.to_csv(table_file)
+
+
+
+
+
+def _get_sdu_list(sdu_grid_path, sdu_id_column="SDU_ID"):
+    driver = ogr.GetDriverByName("ESRI Shapefile")
+    vector = ogr.Open(sdu_grid_path)
+    layer = vector.GetLayer()
+    id_vals = sorted([feature[sdu_id_column] for feature in layer])
+    layer = None
+    vector = None
+    return id_vals
+
+
+
 
 
 if __name__ == '__main__':
