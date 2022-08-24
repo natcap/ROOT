@@ -983,7 +983,8 @@ def _create_value_tables_for_activity(
     mask_raster_path=None,
     fill_raster_lookup=None,
     calc_area_for_activity=None,
-    sdu_id_column="SDU_ID"):
+    sdu_id_column="SDU_ID",
+    aoi_raster_path=None):
     """
     Reimplementation of `_aggregate_raster_values` and `_create_ip_table` that combines their functionality
     by skipping the intermediate data structure and adding the values directly into a pandas `DataFrame`.
@@ -998,11 +999,15 @@ def _create_value_tables_for_activity(
     3) Masked sum with fill values: here we sum the values from `value_raster_lookup` where the
        mask indicates, and then sum values from `nonmasked_raster_lookup` elsewhere. In this case, 
        we do need to be careful to have appropriately masked to the AOI. 
+    
+    How these are used:
+    * Absolute values. This mode optimizes based on the absolute values in the pixels and requires
+      a baseline scenario. It will use case 1 to aggregate the baseline scenarios and case 3 to
+      aggregate the specific activities.
+    * Marginal values. This mode optimized based on pre-calculated marginals and has no baseline
+      scenario. It will use case 2 to aggregate values.
 
     TODO: add serviceshed weights
-
-    ! NOTE: Need to pass in the baseline here if we have it so that we can grab
-    the values from the baseline for pixels that aren't in the activity mask
     """
 
     if not os.path.isfile(sdu_raster_path):
@@ -1049,19 +1054,34 @@ def _create_value_tables_for_activity(
         fill_bands = [raster.GetRasterBand(1) for raster in fill_rasters]
         fill_nodata_values = [band.GetNoDataValue() for band in fill_bands]
 
+    if aoi_raster_path is not None:
+        aoi_raster = gdal.Open(aoi_raster_path)
+        aoi_band = aoi_raster.GetRasterBand(1)
+        aoi_nodata = aoi_band.GetNoDataValue()
+
     # LOOP THROUGH THE BLOCKS
-    for block_offset, sdu_block in pygeoprocessing.iterblocks(
-        (sdu_raster_path, 1)):
+    for block_offset, sdu_block in pygeoprocessing.iterblocks((sdu_raster_path, 1)):
+        
+        # load the value blocks and set to zeros in nodata pixels
         value_blocks = [
             band.ReadAsArray(**block_offset) for band in value_bands]
+        for i, block in enumerate(value_blocks):
+            block[block == value_nodata_list[i]] = 0
         
-        # for i, nd in enumerate(value_nodata_list):
-        #     value_blocks[i][value_blocks[i] == nd] = 0
-
+        if aoi_raster_path is not None:
+        # If we have an AOI, all we need to do is remove non-AOI pixels from the SDU block,
+        # since all the other summations are based on picking out the pixels that match the
+        # SDU ID, ignoring any pixel where `sdu_block == sdu_nodata`. We don't need to
+        # touch any of the value or fill rasters. 
+            aoi_block = aoi_band.ReadAsArray(**block_offset)
+            sdu_block[aoi_block == aoi_nodata] = sdu_nodata
+        
         if mask_raster_path is not None:
             mask_block = mask_band.ReadAsArray(**block_offset)
         if fill_raster_lookup is not None:
             fill_blocks = [band.ReadAsArray(**block_offset) for band in fill_bands]
+            for i, block in enumerate(fill_blocks):
+                block[block == fill_nodata_values[i]] = 0
 
         for sdu in np.unique(sdu_block):
             # loop through each SDU ID that appears in this block
@@ -1071,29 +1091,27 @@ def _create_value_tables_for_activity(
             sdu_pix = sdu_block == sdu
             df.loc[sdu, "pixel_count"] += np.sum(sdu_pix)
 
+            # CASE 1 - abs val mode: baseline scenario
             if mask_raster_path is None:
-                # case 1 - add up all values
                 if calc_area_for_activity is not None:
                     df.loc[sdu, f"{calc_area_for_activity}_ha"] += np.sum(sdu_pix) * pixel_area_ha
                 for vid, vb in zip(value_ids, value_blocks):
                     df.loc[sdu, vid] += np.sum(vb[sdu_pix])
+            # CASE 2 - marg val mode: activity scenarios
             elif mask_raster_path is not None and fill_raster_lookup is None:
-                # case 2
-                print(f"sdu_pix: {sdu_pix.shape}")
-                print(f"mask_block: {mask_block.shape}")
                 mask_pix = np.all([sdu_pix, mask_block != mask_nodata], axis=0)
                 if calc_area_for_activity is not None:
                     df.loc[sdu, f"{calc_area_for_activity}_ha"] += np.sum(mask_pix) * pixel_area_ha
                 for vid, vb in zip(value_ids, value_blocks):
                     df.loc[sdu, vid] += np.sum(vb[mask_pix])
+            # CASE 3 - abs val mode: activity scenarios
             else:
-                # case 3
                 mask_pix = np.all([sdu_pix, mask_block != mask_nodata], axis=0)
+                fill_pix = np.all([sdu_pix, mask_block == mask_nodata], axis=0)
                 if calc_area_for_activity is not None:
                     df.loc[sdu, f"{calc_area_for_activity}_ha"] += np.sum(mask_pix) * pixel_area_ha
-                for vid, vb, fb, fnd in zip(value_ids, value_blocks, fill_blocks, fill_nodata_values):
+                for vid, vb, fb in zip(value_ids, value_blocks, fill_blocks):
                     df.loc[sdu, vid] += np.sum(vb[mask_pix])
-                    fill_pix = np.all([sdu_pix, mask_block != mask_nodata, fb != fnd], axis=0)
                     df.loc[sdu, vid] += np.sum(fb[fill_pix])
             
     table_file = os.path.join(target_folder, f"{activity_name}.csv")
