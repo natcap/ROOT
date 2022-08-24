@@ -152,7 +152,7 @@ def execute(args):
     baseline_raster_file_lookup = None
 
     for activity in activities:
-        print('aggregating rasters for {}'.format(activity))
+        print(f'aggregating rasters for {activity}')
         table_file = os.path.join(args['csv_output_folder'], activity+'.csv')
         mask_path = args['activity_masks'][activity]
 
@@ -160,28 +160,43 @@ def execute(args):
         print('INTERMEDIATE: cleaning marginal value rasters with large '
               'and corrupt negative nodata')
         #TODO: remove this part - this was just to fix a particular set of rasters
-        clean_raster_file_lookup = {}
-        print('raster_table[activity]: {}'.format(raster_table[activity]))
-        for mv_id, mv_path in raster_table[activity].items():
-            f_reg[mv_id] = os.path.join(args['workspace'], os.path.basename(mv_path))
-            _clean_negative_nodata_values(mv_path, f_reg[mv_id])
-            clean_raster_file_lookup[mv_id] = f_reg[mv_id]
-        if activity == "baseline":
-            baseline_raster_file_lookup = clean_raster_file_lookup["baseline"]
+        # clean_raster_file_lookup = {}
+        # print(f'raster_table[activity]: {raster_table[activity]}')
+        # for mv_id, mv_path in raster_table[activity].items():
+        #     f_reg[mv_id] = os.path.join(args['workspace'], os.path.basename(mv_path))
+        #     _clean_negative_nodata_values(mv_path, f_reg[mv_id])
+        #     clean_raster_file_lookup[mv_id] = f_reg[mv_id]
+        # print(f'clean_raster_file_lookup: {clean_raster_file_lookup}')
 
-        # AGGREGATE THE RASTERS        
-        print('STEP: Aggregate Value Rasters to SDU')
-        marginal_value_lookup = _aggregate_raster_values(
-            f_reg['sdu_raster'], f_reg['sdu_grid'], args['sdu_id_col'], mask_path, clean_raster_file_lookup,
-            baseline_raster_lookup=baseline_raster_file_lookup)
-        if activity == "baseline":
-            baseline_value_lookup = marginal_value_lookup
+        # if activity == "baseline":
+        #     baseline_raster_file_lookup = clean_raster_file_lookup["baseline"]
+        
 
-        # UNPACK MARGINAL VALUE LOOKUP TO TABLE
-        print('STEP: Create IP table')
-        _build_ip_table(
-            args['sdu_id_col'], activities, activity, marginal_value_lookup,
-            sdu_serviceshed_coverage, table_file)
+        # # AGGREGATE THE RASTERS        
+        # print('STEP: Aggregate Value Rasters to SDU')
+        # marginal_value_lookup = _aggregate_raster_values(
+        #     f_reg['sdu_raster'], f_reg['sdu_grid'], args['sdu_id_col'], mask_path, clean_raster_file_lookup,
+        #     baseline_raster_lookup=baseline_raster_file_lookup)
+        # if activity == "baseline":
+        #     baseline_value_lookup = marginal_value_lookup
+
+        # # UNPACK MARGINAL VALUE LOOKUP TO TABLE
+        # print('STEP: Create IP table')
+        # _build_ip_table(
+        #     args['sdu_id_col'], activities, activity, marginal_value_lookup,
+        #     sdu_serviceshed_coverage, table_file)
+
+        # CREATE ACTIVITY TABLE
+        _create_value_tables_for_activity(
+            f_reg["sdu_raster"],
+            raster_table[activity],
+            activities,
+            activity,
+            args["csv_output_folder"],
+            sdu_grid_path=f_reg["sdu_grid"],
+            mask_raster_path=mask_path,
+            calc_area_for_activity=activity
+        )
 
         # ADD COMBINED FACTORS TO TABLE
         print('Step: Add combined factors')
@@ -975,11 +990,12 @@ def _create_overlapping_activity_mask(mask_path_list,
 
 def _create_value_tables_for_activity(
     sdu_raster_path,
-    sdu_grid_path,
     value_raster_lookup, 
     activity_list,
     activity_name,
     target_folder,
+    sdu_grid_path=None,
+    sdu_list=None,
     mask_raster_path=None,
     fill_raster_lookup=None,
     calc_area_for_activity=None,
@@ -1012,16 +1028,21 @@ def _create_value_tables_for_activity(
 
     if not os.path.isfile(sdu_raster_path):
         raise ValueError(f"sdu_raster_path {sdu_raster_path} not found")
-    if not os.path.isfile(sdu_grid_path):
+    if sdu_list is None and sdu_grid_path is None:
+        raise ValueError("One of sdu_list and sdu_grid_path must be provided")
+    if sdu_grid_path is not None and not os.path.isfile(sdu_grid_path):
         raise ValueError(f"sdu_grid_path {sdu_grid_path} not found")
 
-
     # INITIALIZE THE DATAFRAME
-    sdu_ids = _get_sdu_list(sdu_grid_path, sdu_id_column=sdu_id_column)
+    if sdu_list is not None:
+        sdu_ids = sdu_list
+    else:
+        sdu_ids = _get_sdu_list(sdu_grid_path, sdu_id_column=sdu_id_column)
     value_ids = value_raster_lookup.keys()
     df = pd.DataFrame(index=sdu_ids)
+    df.index.name = sdu_id_column
 
-    columns = ["SDU_ID", "pixel_count", "area_ha", "exclude"]
+    columns = ["pixel_count", "area_ha", "exclude"]
     columns.extend([f"{activity}_ha" for activity in activity_list])
     columns.extend(value_ids)
     for col in columns:
@@ -1063,8 +1084,7 @@ def _create_value_tables_for_activity(
     for block_offset, sdu_block in pygeoprocessing.iterblocks((sdu_raster_path, 1)):
         
         # load the value blocks and set to zeros in nodata pixels
-        value_blocks = [
-            band.ReadAsArray(**block_offset) for band in value_bands]
+        value_blocks = [band.ReadAsArray(**block_offset) for band in value_bands]
         for i, block in enumerate(value_blocks):
             block[block == value_nodata_list[i]] = 0
         
@@ -1083,8 +1103,8 @@ def _create_value_tables_for_activity(
             for i, block in enumerate(fill_blocks):
                 block[block == fill_nodata_values[i]] = 0
 
+        # loop through each SDU ID that appears in this block
         for sdu in np.unique(sdu_block):
-            # loop through each SDU ID that appears in this block
             if sdu == sdu_nodata:
                 continue
             
@@ -1116,8 +1136,6 @@ def _create_value_tables_for_activity(
             
     table_file = os.path.join(target_folder, f"{activity_name}.csv")
     df.to_csv(table_file)
-
-
 
 
 

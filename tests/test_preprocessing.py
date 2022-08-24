@@ -67,11 +67,11 @@ def test_create_value_tables_for_activity_case_1():
 
     preprocessing._create_value_tables_for_activity(
         sdu_raster_path,
-        sdu_grid_path,
         value_raster_lookup,
         activity_list,
         activity_name,
         target_folder,
+        sdu_grid_path=sdu_grid_path,
         calc_area_for_activity="ag_bmps"
     )
 
@@ -96,11 +96,11 @@ def test_create_value_tables_for_activity_case_2():
 
     preprocessing._create_value_tables_for_activity(
         sdu_raster_path,
-        sdu_grid_path,
         value_raster_lookup,
         activity_list,
         activity_name,
         target_folder,
+        sdu_grid_path=sdu_grid_path,
         mask_raster_path=mask_raster_path,
         calc_area_for_activity="ag_bmps"
     )
@@ -126,12 +126,35 @@ def test_create_value_tables_for_activity_case_3():
 
     preprocessing._create_value_tables_for_activity(
         sdu_raster_path,
-        sdu_grid_path,
         value_raster_lookup,
         activity_list,
         activity_name,
         target_folder,
+        sdu_grid_path=sdu_grid_path,
         mask_raster_path=mask_raster_path,
         calc_area_for_activity="bmps",
         sdu_id_column="SDU_ID"
+    )
+
+
+def test_aggregation_with_tiny_data():
+    src_dir = "tests/test_data/dummy_data"
+    target_folder = "tests/test_workspace/test_create_value_tables_tiny_data"
+    if not os.path.isdir(target_folder):
+        os.makedirs(target_folder)
+
+    sdu_raster_path = os.path.join(src_dir, "sdu.tif")
+    sdu_list = [1,2,3,4]
+    value_raster_lookup = {
+        "A": os.path.join(src_dir, "ones.tif")
+    }
+    activity_list = ["activity_1", "activity_2"]
+    preprocessing._create_value_tables_for_activity(
+        sdu_raster_path,
+        value_raster_lookup,
+        activity_list,
+        "activity_1",
+        target_folder,
+        sdu_list=sdu_list,
+        calc_area_for_activity="activity_1"
     )
