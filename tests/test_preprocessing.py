@@ -13,11 +13,18 @@ from natcap.root import preprocessing
 test_data_root = "tests/test_data/sample_data"
 
 
-# def test_run_preprocessing():
-#     args_file = "tests/test_data/correct_ui_args_example.json"
-#     ui_args = json.load(open(args_file, "r"))["args"]
-#     internal_args = rootcore.parse_args(ui_args)
-#     preprocessing.execute(internal_args)
+def test_run_preprocessing():
+    args_file = "tests/test_data/correct_ui_args_example.json"
+    ui_args = json.load(open(args_file, "r"))["args"]
+    internal_args = rootcore.parse_args(ui_args)
+    preprocessing.execute(internal_args)
+
+
+def test_run_preprocessing_fake_baseline():
+    args_file = "tests/test_data/correct_ui_args_example_fake_baseline.json"
+    ui_args = json.load(open(args_file, "r"))["args"]
+    internal_args = rootcore.parse_args(ui_args)
+    preprocessing.execute(internal_args)
 
 
 def test_create_overlapping_activity_mask():
@@ -281,4 +288,4 @@ def test_serviceshed_coverage():
         ["activity_1", "activity_2"],
         ["A"],
         os.path.join(target_folder, "baseline.csv"),
-    )    
+    )

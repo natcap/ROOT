@@ -158,7 +158,10 @@ def execute(args):
     for activity in activities:
         print(f'aggregating rasters for {activity}')
         table_file = os.path.join(args['csv_output_folder'], f"{activity}.csv")
-        mask_path = args['activity_masks'][activity]
+        if activity in args['activity_masks']:
+            mask_path = args['activity_masks'][activity]
+        else:
+            mask_path = None
 
         _create_value_tables_for_activity(
             f_reg["sdu_raster"],
@@ -962,7 +965,7 @@ def _create_overlapping_activity_mask(mask_path_list,
         any_pixels_have_value,
         target_file,
         ref_info['datatype'],
-        ref_info['nodata'][0])
+        0)
 
 
 def _create_value_tables_for_activity(
@@ -1112,7 +1115,7 @@ def _create_value_tables_for_activity(
                     df.loc[sdu, vid] += np.sum(fb[fill_pix])
             
     table_file = os.path.join(target_folder, f"{activity_name}.csv")
-    df.to_csv(table_file)
+    df.reset_index().to_csv(table_file, index=False)
 
 
 def _get_sdu_list(sdu_grid_path, sdu_id_column="SDU_ID"):
@@ -1155,12 +1158,11 @@ def _add_servicesheds(sdu_serviceshed_lookup, activity_list, table_folder):
         metrics = list(key_lookup[n][1].keys())
         for m in metrics:
             sdf[f"{n}_{m}"] = [sdu_serviceshed_lookup[s][n][1][m] for s in serviceshed_sdus]
-    sdf.to_csv(os.path.join(table_folder, "swm_table.csv"), index=False)
 
     for activity in activity_list:
         table_file = os.path.join(table_folder, f"{activity}.csv")
         df = pd.read_csv(table_file)
-        df = pd.merge(df, sdf, left_on="SDU_ID", right_on="SDU_ID").reset_index()
+        df = pd.merge(df, sdf, left_on="SDU_ID", right_on="SDU_ID")
         df.to_csv(table_file, index=False)
 
 
