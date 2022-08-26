@@ -11,5 +11,4 @@ activity_mask_rasters/
 impact_potential_rasters/
 spatial_weighting_maps/
 test_workspace/
-test_data/
 *.ipynb
