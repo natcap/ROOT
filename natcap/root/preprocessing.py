@@ -137,8 +137,11 @@ def execute(args):
     print('STEP: Calculate SDU serviceshed coverage')
     if 'serviceshed_list' in args and args['serviceshed_list'] is not None:
         sdu_serviceshed_coverage = _serviceshed_coverage(
-            f_reg['sdu_grid'], args['sdu_id_col'], args["serviceshed_list"],
-            args["serviceshed_names"], args["serviceshed_values"])
+            f_reg["sdu_grid"],
+            args["sdu_id_col"],
+            args["serviceshed_list"],
+            args["serviceshed_names"],
+            args["serviceshed_values"])
     else:
         sdu_serviceshed_coverage = None
 
@@ -151,42 +154,12 @@ def execute(args):
         activities = ["baseline"] + [a for a in activities if a != "baseline"]
     baseline_raster_file_lookup = None
 
+    # CREATE ACTIVITY TABLES
     for activity in activities:
         print(f'aggregating rasters for {activity}')
-        table_file = os.path.join(args['csv_output_folder'], activity+'.csv')
+        table_file = os.path.join(args['csv_output_folder'], f"{activity}.csv")
         mask_path = args['activity_masks'][activity]
 
-        # raster cleaning
-        print('INTERMEDIATE: cleaning marginal value rasters with large '
-              'and corrupt negative nodata')
-        #TODO: remove this part - this was just to fix a particular set of rasters
-        # clean_raster_file_lookup = {}
-        # print(f'raster_table[activity]: {raster_table[activity]}')
-        # for mv_id, mv_path in raster_table[activity].items():
-        #     f_reg[mv_id] = os.path.join(args['workspace'], os.path.basename(mv_path))
-        #     _clean_negative_nodata_values(mv_path, f_reg[mv_id])
-        #     clean_raster_file_lookup[mv_id] = f_reg[mv_id]
-        # print(f'clean_raster_file_lookup: {clean_raster_file_lookup}')
-
-        # if activity == "baseline":
-        #     baseline_raster_file_lookup = clean_raster_file_lookup["baseline"]
-        
-
-        # # AGGREGATE THE RASTERS        
-        # print('STEP: Aggregate Value Rasters to SDU')
-        # marginal_value_lookup = _aggregate_raster_values(
-        #     f_reg['sdu_raster'], f_reg['sdu_grid'], args['sdu_id_col'], mask_path, clean_raster_file_lookup,
-        #     baseline_raster_lookup=baseline_raster_file_lookup)
-        # if activity == "baseline":
-        #     baseline_value_lookup = marginal_value_lookup
-
-        # # UNPACK MARGINAL VALUE LOOKUP TO TABLE
-        # print('STEP: Create IP table')
-        # _build_ip_table(
-        #     args['sdu_id_col'], activities, activity, marginal_value_lookup,
-        #     sdu_serviceshed_coverage, table_file)
-
-        # CREATE ACTIVITY TABLE
         _create_value_tables_for_activity(
             f_reg["sdu_raster"],
             raster_table[activity],
@@ -198,23 +171,27 @@ def execute(args):
             calc_area_for_activity=activity
         )
 
-        # ADD COMBINED FACTORS TO TABLE
-        print('Step: Add combined factors')
-        if 'combined_factors' in args and args['combined_factors'] is not None:
+    # ADD SERVICESHEDS TO TABLES
+    if sdu_serviceshed_coverage is not None:
+        _add_servicesheds(sdu_serviceshed_coverage, activities, args["csv_output_folder"])
+
+    # ADD COMBINED FACTORS TO TABLES
+    print('Step: Add combined factors')
+    if 'combined_factors' in args and args['combined_factors'] is not None:
+        for activity in activities:
+            table_file = os.path.join(args['csv_output_folder'], f"{activity}.csv")
             _add_combined_factors(table_file, args['combined_factors'])
 
     # MAKE DUMMY BASELINE TABLE IF NEEDED
     if "baseline" not in activities:
         print('STEP: Create baseline table')
-        baseline_value_lookup = marginal_value_lookup.copy()
-        # zero out all the marginal values since that's equivalent of baseline
-        for marginal_value_tuple in baseline_value_lookup.values():
-            for mv_id in marginal_value_tuple[1]:
-                marginal_value_tuple[1][mv_id] = [0.0, 0, 0.0]
-
-        _build_ip_table(
-            args['sdu_id_col'], activities, None, baseline_value_lookup, sdu_serviceshed_coverage,
-            f_reg['baseline_ip_table'], baseline_table=True)
+        f_reg["baseline_ip_table"] = os.path.join(args["csv_output_folder"], "baseline.csv")
+        _create_baseline_table(
+            os.path.join(args['csv_output_folder'], f"{activities[0]}.csv"),
+            activities,
+            list(raster_table[activities[0]].keys()),
+            f_reg["baseline_ip_table"]
+        )
         if 'combined_factors' in args and args['combined_factors'] is not None:
             _add_combined_factors(f_reg['baseline_ip_table'], args['combined_factors'])
 
@@ -343,7 +320,7 @@ def _build_ip_table(
                         [serviceshed coverage proportion for a on id_0,
                          {service_shed_a_value_i: sum of value_i multiplied
                           by proportion of coverage of sdu_id_0 with
-                          servicshed _id_a.}]
+                          serviceshed_id_a.}]
                     "serviceshed_id_b": ....
                 },
                 sdu_id_1: {....
@@ -1138,7 +1115,6 @@ def _create_value_tables_for_activity(
     df.to_csv(table_file)
 
 
-
 def _get_sdu_list(sdu_grid_path, sdu_id_column="SDU_ID"):
     driver = ogr.GetDriverByName("ESRI Shapefile")
     vector = ogr.Open(sdu_grid_path)
@@ -1149,7 +1125,67 @@ def _get_sdu_list(sdu_grid_path, sdu_id_column="SDU_ID"):
     return id_vals
 
 
+def _add_servicesheds(sdu_serviceshed_lookup, activity_list, table_folder):
+    """
 
+    Want to add the serviceshed data to an impact potential table.
+
+    `sdu_serviceshed_lookup` is a dictionary of the form:
+        {
+            sdu_id_0: {
+                "serviceshed_id_a":
+                    (serviceshed coverage proportion for a on id_0,
+                        {service_shed_a_value_i: sum of value_i multiplied
+                        by proportion of coverage of sdu_id_0 with
+                        servicshed _id_a.})
+                "serviceshed_id_b": ....
+            },
+            sdu_id_1: {....
+        }
+
+    """
+
+    serviceshed_sdus = sorted(sdu_serviceshed_lookup.keys())
+    key_lookup = sdu_serviceshed_lookup[serviceshed_sdus[0]]
+    serviceshed_names = list(key_lookup.keys())
+    
+    sdf = pd.DataFrame(data={"SDU_ID": serviceshed_sdus})
+    for n in serviceshed_names:
+        sdf[n] = [sdu_serviceshed_lookup[s][n][0] for s in serviceshed_sdus]
+        metrics = list(key_lookup[n][1].keys())
+        for m in metrics:
+            sdf[f"{n}_{m}"] = [sdu_serviceshed_lookup[s][n][1][m] for s in serviceshed_sdus]
+    sdf.to_csv(os.path.join(table_folder, "swm_table.csv"), index=False)
+
+    for activity in activity_list:
+        table_file = os.path.join(table_folder, f"{activity}.csv")
+        df = pd.read_csv(table_file)
+        df = pd.merge(df, sdf, left_on="SDU_ID", right_on="SDU_ID").reset_index()
+        df.to_csv(table_file, index=False)
+
+
+def _create_baseline_table(reference_table, activity_list, value_list, target_file):
+    """
+    Create a zeroed-out version of the SDU value table for use as a dummy
+    baseline in marginal value-based optimizations. Need to zero out the 
+    activity_ha and objective score values. Leave in the servicesheds.
+    We leave the combined factors in place because we will call 
+    `_add_combined_factors` on this table if needed which will overwrite
+    the existing versions. 
+
+    TODO: I could call `_add_combined_factors` in this function to simplify,
+    but then I'd need to pass in the whole args structure or do some if ... and ...
+    nonsense to pick the argument to pass. 
+    """
+
+    df = pd.read_csv(reference_table)
+
+    for activity in activity_list:
+        df[f"{activity}_ha"] = 0
+    for value in value_list:
+        df[value] = 0
+    
+    df.to_csv(target_file, index=False)
 
 
 if __name__ == '__main__':
