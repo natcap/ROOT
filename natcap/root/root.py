@@ -46,8 +46,6 @@ ARGS_SPEC = {
     'module': __name__,
     'userguide_html': '../documentation/root.html',
     'args_with_spatial_overlap': {
-        # "spatial_keys": ['potential_conversion_mask_path',
-        #                  'spatial_decision_unit_shape'],
         "spatial_keys": [],
     },
     'args': {
@@ -68,7 +66,7 @@ ARGS_SPEC = {
                 "Table with paths for activity masks. See User's Guide."),
             'name': 'Activity Mask Table (CSV)',
         },
-        'marginal_raster_table_path': {
+        'impact_raster_table_path': {
             'type': 'csv',
             'required': True,
             'about': (
@@ -129,6 +127,21 @@ ARGS_SPEC = {
                 "ignored if an existing file is used as the SDU map."),
             'name': 'Spatial Decision Unit Area (ha)',
         },
+        'aoi_file_path': {
+            'type': 'shp',
+            'required': False,
+            'about': (
+                "Area of interest outline. Used to mask spatial analysis."),
+            'name': 'AOI shapefile (optional)',
+        },
+        'advanced_args_json_path': {
+            'type': 'json',
+            'required': False,
+            'about': (
+                "json file with advanced options"),
+            'name': 'Advanced options (json)'
+        },
+
         'do_optimization': {
             'type': 'boolean',
             'required': True,
@@ -322,24 +335,17 @@ class Root(model.InVESTModel):
             **_create_input_kwargs_from_args_spec('activity_mask_table_path'))
         self.preprocessing_container.add_input(self.activity_mask_raster_path)
 
-        self.marginal_raster_table_path = inputs.File(
-            **_create_input_kwargs_from_args_spec('marginal_raster_table_path'))
-        self.preprocessing_container.add_input(self.marginal_raster_table_path)
-
+        self.impact_raster_table_path = inputs.File(
+            **_create_input_kwargs_from_args_spec('impact_raster_table_path'))
+        self.preprocessing_container.add_input(self.impact_raster_table_path)
 
         self.serviceshed_shapefiles_table = inputs.File(
             **_create_input_kwargs_from_args_spec('serviceshed_shapefiles_table'))
         self.preprocessing_container.add_input(self.serviceshed_shapefiles_table)
 
-
         self.combined_factor_table_path = inputs.File(
             **_create_input_kwargs_from_args_spec('combined_factor_table_path'))
         self.preprocessing_container.add_input(self.combined_factor_table_path)
-
-        # self.potential_conversion_mask_path = inputs.File(
-        #     **_create_input_kwargs_from_args_spec('potential_conversion_mask_path'))
-        # self.preprocessing_container.add_input(self.potential_conversion_mask_path)
-
 
         self.spatial_decision_unit_shape = inputs.Text(
             **_create_input_kwargs_from_args_spec('spatial_decision_unit_shape'))
@@ -348,6 +354,15 @@ class Root(model.InVESTModel):
         self.spatial_decision_unit_area = inputs.Text(
             **_create_input_kwargs_from_args_spec('spatial_decision_unit_area'))
         self.preprocessing_container.add_input(self.spatial_decision_unit_area)
+
+        self.aoi_file_path = inputs.Text(
+            **_create_input_kwargs_from_args_spec('aoi_file_path'))
+        self.preprocessing_container.add_input(self.aoi_file_path)
+
+        self.advanced_args_json_path = inputs.Text(
+            **_create_input_kwargs_from_args_spec('advanced_args_json_path'))
+        self.preprocessing_container.add_input(self.advanced_args_json_path)
+
 
         self.optimization_container = inputs.Container(
             args_key=u'optimization_container',
@@ -392,12 +407,13 @@ class Root(model.InVESTModel):
         if self.preprocessing_container.value():
             args[self.do_preprocessing.args_key] = self.do_preprocessing.value()
             args[self.activity_mask_raster_path.args_key] = self.activity_mask_raster_path.value()
-            args[self.marginal_raster_table_path.args_key] = self.marginal_raster_table_path.value()
+            args[self.impact_raster_table_path.args_key] = self.impact_raster_table_path.value()
             args[self.serviceshed_shapefiles_table.args_key] = self.serviceshed_shapefiles_table.value()
             args[self.combined_factor_table_path.args_key] = self.combined_factor_table_path.value()
-            # args[self.potential_conversion_mask_path.args_key] = self.potential_conversion_mask_path.value()
             args[self.spatial_decision_unit_shape.args_key] = self.spatial_decision_unit_shape.value()
             args[self.spatial_decision_unit_area.args_key] = self.spatial_decision_unit_area.value()
+            args[self.aoi_file_path.args_key] = self.aoi_file_path.value()
+            args[self.advanced_args_json_path.args_key] = self.advanced_args_json_path.value()
 
         if self.optimization_container.value():
             args[self.do_optimization.args_key] = self.do_optimization.value()
