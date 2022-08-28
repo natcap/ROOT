@@ -103,6 +103,7 @@ def execute(args):
         'table_folder': args['csv_output_folder'],
         'baseline_ip_table': os.path.join(
             args['csv_output_folder'], args['baseline_file']),
+        'aoi_file_path': args['aoi_file_path'],
         }
     for path in f_reg.values():
         dir_path = os.path.dirname(path)
@@ -113,6 +114,13 @@ def execute(args):
     mask_path_list = list(args['activity_masks'].values())
     all_activity_mask = os.path.join(args['workspace'], 'all_activity_mask.tif')
     _create_overlapping_activity_mask(mask_path_list, all_activity_mask)
+
+    # Rasterize AOI if it exists
+    if f_reg['aoi_file_path']:
+        f_reg['aoi_raster_path'] = _rasterize_aoi(
+            f_reg['aoi_file_path'], all_activity_mask, args['workspace'])
+    else:
+        f_reg['aoi_raster_path'] = None
 
     # Creating or copying SDU shapefile
     if args['grid_type'] in ['square', 'hexagon']:
@@ -128,7 +136,7 @@ def execute(args):
     if "filter_sdu" in args and args["filter_sdu"] is True:
         print('STEP: Removing polygons that only cover nodata')
         _remove_nonoverlapping_sdus(
-            f_reg['sdu_grid'], all_activity_mask, args['sdu_id_col'])
+            f_reg['sdu_grid'], all_activity_mask, args['sdu_id_col'], f_reg['aoi_raster_path'])
 
     f_reg['sdu_raster'] = _rasterize_sdus(
         f_reg['sdu_grid'], args['sdu_id_col'], all_activity_mask, args['workspace'])
@@ -170,6 +178,7 @@ def execute(args):
             args["csv_output_folder"],
             sdu_grid_path=f_reg["sdu_grid"],
             mask_raster_path=mask_path,
+            aoi_raster_path=f_reg["aoi_raster_path"],
             calc_area_for_activity=activity
         )
 
@@ -439,7 +448,7 @@ def _grid_vector_across_raster(
     grid_layer.SyncToDisk()
 
 
-def _remove_nonoverlapping_sdus(vector_path, mask_raster_path, key_id_field):
+def _remove_nonoverlapping_sdus(vector_path, mask_raster_path, key_id_field, aoi_raster_path):
     """Remove polygons in `vector_path` that don't overlap valid data.
 
     Parameters:
@@ -539,6 +548,23 @@ def _rasterize_sdus(sdu_grid_path, sdu_key_id, reference_raster, workspace):
         id_raster, [1], layer, options=['ATTRIBUTE=%s' % sdu_key_id])
     id_raster = None
     return id_raster_path
+
+
+def _rasterize_aoi(aoi_shape_path, reference_raster, workspace):
+    aoi_raster_path = os.path.join(workspace, "aoi.tif")
+    aoi_raster_nodata = 0
+    pygeoprocessing.new_raster_from_base(
+        reference_raster, aoi_raster_path,
+        gdal.GDT_Byte, band_nodata_list=[aoi_raster_nodata],
+        fill_value_list=[aoi_raster_nodata])
+
+    vector = ogr.Open(aoi_shape_path, 1)  # open for reading
+    layer = vector.GetLayer()
+    aoi_raster = gdal.Open(aoi_raster_path, gdal.GA_Update)
+    gdal.RasterizeLayer(
+        aoi_raster, [1], layer, burn_values=[1])
+    aoi_raster = None
+    return aoi_raster_path
 
 
 def _assert_inputs_same_size_and_srs(raster_path_list, shapefile_path_list):
