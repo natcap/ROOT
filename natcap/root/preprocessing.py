@@ -302,8 +302,6 @@ def _serviceshed_coverage(
     return result
 
 
-
-
 def _add_combined_factors(data_table_path, combined_factors_dict):
     """
     Opens data_table_path as dataframe, then for each name and list of factors in

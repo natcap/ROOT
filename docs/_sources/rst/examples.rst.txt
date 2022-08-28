@@ -1,9 +1,9 @@
 Example of a ROOT application
 =============================
 
-The central theme of ROOT is to think about a management decision of consisting of allocating different **activities** on the landscape based on their **impacts** and using **optimization** to find a range of best-case options to inform **decision-making**. In this section, we go through a sample application of ROOT, building from the core features of the tool to the various additional features that can be used to address questions of increasing complexity. 
+The central subject of a ROOT analysis is a management decision consisting of allocating different **activities** on the landscape based on their **impacts** and using **optimization** to find a range of best-case options to inform **decision-making**. In this section, we go through a sample application of ROOT, building from the core features of the tool to cover additional features that can be used to address questions of increasing complexity. 
 
-In the base case, we will target a given number of hectares to restore in order to maximize a suite of ecosystem services. The extensions will consider different kinds of activities together, spatial weighting, converting between absolute and marginal value approaches, and applying different constraints. To see the specific steps to implement these examples in ROOT, see the :ref:`sample data walkthrough<Sample data walkthrough>`. Throughout this section, links will point to the applicable section in the :ref:`Interface Guide<Documentation for ROOT interface inputs>` for a more general overview. 
+In the base case, we will consider alternative ways to restore a given number of hectares of habitat in order to maximize a suite of ecosystem services. Then we will illustrate how to consider different kinds of activities together, applying different factors for spatial weighting, converting between absolute and marginal value approaches, and applying constraints to the analysis. To see the specific steps to implement these examples in ROOT, see the :ref:`sample data walkthrough<Sample data walkthrough>`. Throughout this section, links will point to the applicable section in the :ref:`Interface Guide<Documentation for ROOT interface inputs>` for a more general overview. 
 
 
 Base case: Restoration to improve ecosystem services
@@ -12,7 +12,7 @@ Base case: Restoration to improve ecosystem services
 The decision context
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In this section, we lay out an analysis to inform development of a plan to restore 10,000 ha of forest within a given region. The goals for the plan are to improve biodiversity, carbon storage, and water quality, but without specific targets for any objective. Eligible sites have been identified based on some criteria (marginal and/or degraded cropland, for example). The ROOT analysis will help identify optimal allocations of the 10,000 ha that maximize benefits to each of the target services across a range of different combinations so that stakeholders can make an informed choice about which plan to pursue. 
+In this section, we introduce an analysis to inform development of a plan to restore 10,000 ha of forest within a given region. The goals for the plan are to improve biodiversity, carbon storage, and water quality, but without specific targets for any objective. Eligible sites have been identified based on some criteria (marginal and/or degraded cropland, for example). The ROOT analysis will help identify optimal allocations of the 10,000 ha that maximize benefits to each of the target services across a range of different combinations so that stakeholders can make an informed choice about which plan to pursue. 
 
     .. note::
 
@@ -24,13 +24,13 @@ Input data
 To set up this analysis, we need the following data:
 
 *   Map of potential restoration sites: This raster indicates which pixels are eligible candidates for restoration. For this example, we have selected all cropland pixels below the 25th percentile in terms of crop value. Details about these rasters are :ref:`in the guide here<ig-amt>`.
-*	Potential benefit maps: These rasters indicate the per-pixel benefit of restoration to each of the objectives. For this example, we include improvement in a biodiversity index, change in carbon storage, and reduction in nitrate loading to drinking water. **Important:** Note that these rasters should indicate the *benefit* of restoration, meaning the change from the current conditions, rather than the absolute, or total, value after the change is made. There is an option :ref:`described in the guide<ig-abs-vs-marg>` that allows the optimization to run based on a total, but it requires that data be provided on the baseline conditions as well.
+*	Potential values maps: These rasters indicate the per-pixel value for each outcome of concern under each of the different management scenarios, in this case baseline (current management) and restoration. For this example, we include improvement in a biodiversity index, change in carbon storage, and reduction in nitrate loading to drinking water. **Important:** Note that in this example, these rasters indicate the *absolute* value in each scenario. An alternative way to use ROOT is to provide rasters that indicate the *benefit* of restoration, meaning the difference from  current conditions after the change is made. In that case, no baseline values need to be provided. These options are further :ref:`described in the guide<ig-abs-vs-marg>`.
 
-When preparing this data for ROOT, it is important that the rasters be provided with identical extent, projection, and pixel size. Additionally, there is a particular format for the csv tables used to tell ROOT which raster to use for which data value. These details are discussed in the :ref:`interface guide<ig-preprocessing>`.
+**Note**: When preparing this data for ROOT, it is important that the rasters be provided with identical extent, projection, and pixel size. Additionally, there is a particular format for the csv tables used to tell ROOT which raster to use for which data value. These details are discussed in the :ref:`interface guide<ig-preprocessing>`.
 
 Within ROOT, one key user-defined parameter is the “spatial decision unit” (SDU, :ref:`see guide<ig-sdu>`). This is the spatial unit for which ROOT turns each of the potential activities (in this case restoration) on or off. Due to computational limitations, it is generally not practical to have SDUs correspond with pixels. Depending on pixel size, this might also correspond with reasonable project limitations – for example it might not make sense to identify 30m^2 areas for restoration if there is a fixed per-project cost. Here we will set the SDUs to be 25 ha, but it is worth considering this choice carefully for any given application. Note that ROOT also allows the user to provide an explicit map (via a shapefile) of desired SDUs, giving a great deal of flexibility to how SDUs are structured. 
 
-With this data provided, we can run ROOT’s preprocessing step, which calculates per-SDU totals for each of the provided potential impact rasters. This step automates masking the impact rasters according to the activity mask and performing the zonal stats needed to sum the impact per SDU polygon. The results are saved to tables of values used by the optimization step, as well as to a shapefile output that can be used for user analysis or visualization.
+With this data provided, we can run ROOT’s preprocessing step, which calculates per-SDU totals for each of the provided potential impact rasters. This step automates masking the impact rasters according to the activity and area-of-interest masks and performing the zonal stats needed to sum the impact per SDU polygon. The results are saved to tables of values used by the optimization step, as well as to a shapefile output that can be used for user analysis or visualization.
 
 Optimization parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -38,9 +38,11 @@ Optimization parameters
 Finally, we need to specify the kind of optimization analysis to run. Within a ROOT optimization problem, there are three elements to consider: what are the choices available? What are the objectives or goals of the decision? And what are the constraints or targets? We have discussed the first of these already – the various activities available in each SDU are the choices. More specifically, the choices are to do or not do a given activity in each of the various SDUs. 
 
 The :ref:`objectives<ig-objectives-table>` define the values that we aim to maximize or minimize with different allocations of the various activities. In our current example the objectives are:
+
 *	Improvement in a biodiversity index
 *	Increase in carbon storage
 *	Reduction in nitrate concentrations in drinking water
+
 In this example, each of these has been calculated so that a larger value represents a bigger benefit, although ROOT can handle objectives where a smaller value is preferable as well (e.g. total nitrate rather than reduction of nitrate, or cost). When identifying each objective, the user must indicate whether to maximize or minimize it.
 
 Constraints (targets) are rules that determine which allocations of the activities are valid. Some familiar constraints might be a total budget that can’t be exceeded, or a critical area of habitat that needs to be protected. In ROOT, constraints can be set on multiple elements at a time, allowing for some relatively complex problem formulations to be addressed. In this example, we will set a constraint on the total area to restore.
