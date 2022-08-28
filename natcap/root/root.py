@@ -128,14 +128,14 @@ ARGS_SPEC = {
             'name': 'Spatial Decision Unit Area (ha)',
         },
         'aoi_file_path': {
-            'type': 'shp',
+            'type': 'vector',
             'required': False,
             'about': (
                 "Area of interest outline. Used to mask spatial analysis."),
             'name': 'AOI shapefile (optional)',
         },
         'advanced_args_json_path': {
-            'type': 'json',
+            'type': 'file',
             'required': False,
             'about': (
                 "json file with advanced options"),
