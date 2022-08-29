@@ -1,0 +1,3 @@
+activity,mask_path
+forest_restoration,tests/test_data/sample_data/activity_mask_rasters/forest_restoration_mask.tif
+riparian_restoration,tests/test_data/sample_data/activity_mask_rasters/riparian_restoration_mask.tif

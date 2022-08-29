@@ -1,12 +1,12 @@
 {
     "args": {
-        "workspace_dir": "tests/test_workspace/full_run_marginal_values",
-        "activity_mask_table_path": "tests/test_data/sample_data/tables/1_am_table.csv",
+        "workspace_dir": "tests/test_workspace/full_run_fake_baseline",
+        "activity_mask_table_path": "tests/test_data/sample_data/tables/1_am_table_fake_baseline.csv",
         "combined_factor_table_path": "tests/test_data/sample_data/tables/4_cf_table.csv",
         "do_optimization": true,
         "do_preprocessing": true,
         "frontier_type": "n_dim_frontier",
-        "impact_raster_table_path": "tests/test_data/sample_data/tables/2_ipm_table.csv",
+        "impact_raster_table_path": "tests/test_data/sample_data/tables/2_ipm_table_fake_baseline.csv",
         "number_of_frontier_points": "5",
         "objectives_table_path": "tests/test_data/sample_data/tables/5a_objectives_table.csv",
         "optimization_container": true,
@@ -15,7 +15,7 @@
         "serviceshed_shapefiles_table": "tests/test_data/sample_data/tables/3_swm_table.csv",
         "spatial_decision_unit_area": "1000",
         "spatial_decision_unit_shape": "hexagon",
-        "targets_table_path": "tests/test_data/sample_data/tables/6_constraints_table.csv"
+        "targets_table_path": "tests/test_data/sample_data/tables/6_constraints_table_fake_baseline.csv"
     },
     "invest_version": "3.9.2",
     "model_name": "__main__"

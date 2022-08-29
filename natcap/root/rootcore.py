@@ -73,11 +73,11 @@ def parse_args(ui_args):
     if ui_args['do_preprocessing']:
 
         validate_activity_mask_table(ui_args['activity_mask_table_path'])
-        validate_raster_input_table(ui_args['marginal_raster_table_path'])
+        validate_raster_input_table(ui_args['impact_raster_table_path'])
         validate_activity_names_in_amt_and_iprt(ui_args['activity_mask_table_path'],
-                                                ui_args['marginal_raster_table_path'])
+                                                ui_args['impact_raster_table_path'])
         validate_shapefile_input_table(ui_args['serviceshed_shapefiles_table'])
-        validate_cft_table(ui_args['marginal_raster_table_path'],
+        validate_cft_table(ui_args['impact_raster_table_path'],
                            ui_args['serviceshed_shapefiles_table'],
                            ui_args['combined_factor_table_path'])
         validate_sdu_shape_arg(ui_args['spatial_decision_unit_shape'])
@@ -95,7 +95,7 @@ def parse_args(ui_args):
 
         root_args['activity_masks'] = _process_activity_mask_table(
             ui_args['activity_mask_table_path'])
-        root_args['raster_table'] = _process_raster_table(ui_args['marginal_raster_table_path'])
+        root_args['raster_table'] = _process_raster_table(ui_args['impact_raster_table_path'])
         raster_table = root_args['raster_table']
         print('raster_table.activity_names: {}'.format(raster_table.activity_names))
         print('raster_table.factor_names: {}'.format(raster_table.factor_names))
@@ -131,6 +131,13 @@ def parse_args(ui_args):
             root_args['combined_factors'] = combined_factors
         else:
             root_args['combined_factors'] = None
+        
+        # check for optional arguments
+        root_args['aoi_file_path'] = ui_args['aoi_file_path'] if os.path.isfile(
+            ui_args['aoi_file_path']) else None
+        root_args['advanced_args_json_path'] = ui_args['advanced_args_json_path'] if os.path.isfile(
+            ui_args['advanced_args_json_path']) else None
+
 
     if ui_args['do_optimization']:
 
@@ -320,6 +327,11 @@ def validate_activity_mask_table(activity_mask_table_path):
 
 
 def validate_raster_input_table(raster_table_path):
+    """
+    Check to make sure that all the rasters named in `raster_table_path` exist.
+
+    Skips first column of the table (assumes it is a label column, not a file path column).
+    """
     rt = pd.read_csv(raster_table_path)
     not_found = []
     for c in rt.columns[1:]:
@@ -359,7 +371,7 @@ def validate_activity_names_in_amt_and_iprt(amt_path, iprt_path):
         if a not in iprt_activities:
             match = False
     for a in iprt_activities:
-        if a not in amt_activities:
+        if a not in amt_activities and a != "baseline":
             match = False
     if match is False:
         msg = "Error: activities do not match in Activity Mask table and Impact Potential Raster table. Please check spelling and missing/extra values: {} vs {}".format(amt_activities, iprt_activities)
@@ -367,6 +379,9 @@ def validate_activity_names_in_amt_and_iprt(amt_path, iprt_path):
 
 
 def validate_shapefile_input_table(shapefile_table_path):
+    if shapefile_table_path is None or len(shapefile_table_path) == 0:
+        return
+
     table = pd.read_csv(shapefile_table_path)
 
     # check columns are correct
@@ -423,7 +438,7 @@ def validate_cft_table(rt_path, st_path, cft_path):
     Returns:
 
     """
-    if len(cft_path) == 0:
+    if cft_path is None or len(cft_path) == 0:
         return
     cft = pd.read_csv(cft_path)
 
