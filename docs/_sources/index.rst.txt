@@ -1,7 +1,9 @@
 Welcome to the documentation for ROOT
 =====================================
 
-The latest version of ROOT is available at https://www.naturalcapitalproject.org/root/. This page provides documentation on using ROOT. See the introduction for an overview. See Workflow and Interface guide for descriptions of the various steps in using ROOT, how to prepare data, structure the analysis, and interact with the tool and its outputs. See Sample data walkthrough for a worked example. See Examples for some more in-depth applications. See Root UI code for details on the Python implementation of ROOT.
+ROOT is tool designed to facilitate multi-objective landscape planning. It uses an optimization approach to help identify opportunities to maximize cobenefits and to identify compromise solutions where required.
+
+This page provides guidance on using ROOT. Links to the most recent version of ROOT can be found on the :ref:`intro page<Getting ROOT and sample data>`. The Narrative Example section provides an introductory walkthrough of a ROOT application. The Workflow and Interface guide sections provide descriptions of the various steps in using ROOT, how to prepare data, structure the analysis, and interact with the tool and its outputs. Finally, the Sample data walkthrough gives a worked example similar to the Narrative Example but with more details spelled out and with accompanying sample data.
 
 
 .. toctree::
@@ -10,7 +12,7 @@ The latest version of ROOT is available at https://www.naturalcapitalproject.org
    :caption: Contents:
 
    Introduction and Installation<rst/intro>
-   Narrative examples <rst/examples>
+   Narrative example <rst/examples>
    Workflow <rst/workflow>
    Interface guide <rst/interface_guide>
    Sample data walkthrough <rst/sample_data_walkthrough>
