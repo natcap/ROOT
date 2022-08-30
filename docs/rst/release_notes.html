@@ -43,13 +43,14 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="intro.html">1. Introduction and Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html">2. Narrative examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">2. Narrative example</a></li>
 <li class="toctree-l1"><a class="reference internal" href="workflow.html">3. Workflow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="interface_guide.html">4. Interface guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sample_data_walkthrough.html">5. Sample data walkthrough</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">6. Release Notes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#july-2018">6.1. 1.1 (July 2018)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#initial-release">6.2. 1.0 - Initial release</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#aug-2022">6.1. 1.2 (Aug 2022)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#july-2018">6.2. 1.1 (July 2018)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#initial-release">6.3. 1.0 - Initial release</a></li>
 </ul>
 </li>
 </ul>
@@ -80,8 +81,21 @@
              
   <section id="release-notes">
 <h1><span class="section-number">6. </span>Release Notes<a class="headerlink" href="#release-notes" title="Permalink to this heading"></a></h1>
+<section id="aug-2022">
+<h2><span class="section-number">6.1. </span>1.2 (Aug 2022)<a class="headerlink" href="#aug-2022" title="Permalink to this heading"></a></h2>
+<p>Introduces new features:
+* <strong>Absolute value analysis</strong>: Instead of requiring “marginal values” for the optimization, ROOT
+will now function with “absolute values” with the inclusion of a baseline scenario.
+* <strong>Area of interest</strong>: A new option to provide an area of interest map has been added. This allows
+the user to use a shapefile as an additional boundary to determine the area to analyze.
+* <strong>Advanced options</strong>: Some new advanced options are now accessible by providing a json-formatted
+options file.</p>
+<p>Internal improvements:
+* <strong>Preprocessing refactoring</strong>: Various changes were made to the ROOT preprocessing steps to
+improve the analysis.</p>
+</section>
 <section id="july-2018">
-<h2><span class="section-number">6.1. </span>1.1 (July 2018)<a class="headerlink" href="#july-2018" title="Permalink to this heading"></a></h2>
+<h2><span class="section-number">6.2. </span>1.1 (July 2018)<a class="headerlink" href="#july-2018" title="Permalink to this heading"></a></h2>
 <p>Introduces new features:</p>
 <ul class="simple">
 <li><p><strong>Multiple activities</strong>: ROOT can now optimize locations for more than one class of activity in the same analysis.</p></li>
@@ -93,7 +107,7 @@
 </ul>
 </section>
 <section id="initial-release">
-<h2><span class="section-number">6.2. </span>1.0 - Initial release<a class="headerlink" href="#initial-release" title="Permalink to this heading"></a></h2>
+<h2><span class="section-number">6.3. </span>1.0 - Initial release<a class="headerlink" href="#initial-release" title="Permalink to this heading"></a></h2>
 <p>Initial release of ROOT.</p>
 </section>
 </section>

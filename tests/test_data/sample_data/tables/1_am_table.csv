@@ -1,0 +1,4 @@
+activity,mask_path
+agbmps,tests/test_data/sample_data/activity_mask_rasters/ag_bmps_mask.tif
+forest_restoration,tests/test_data/sample_data/activity_mask_rasters/forest_restoration_mask.tif
+riparian_restoration,tests/test_data/sample_data/activity_mask_rasters/riparian_restoration_mask.tif

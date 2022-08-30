@@ -4,7 +4,7 @@ Generated: Fri Apr 20 14:49:39 2018
 InVEST version: 3.3.3
 """
 
-from natcap.root import root
+from natcap.root import rootcore
 
 
 args = {
@@ -13,7 +13,7 @@ args = {
         u'do_optimization': True,
         u'do_preprocessing': False,
         u'frontier_type': u'n_dim_frontier',
-        u'marginal_raster_table_path': u'/Users/hawt0010/Projects/ROOT/training/Medellin_data_ROOT_training/Training_Data/Tables/1_ipm_table.csv',
+        u'impact_raster_table_path': u'/Users/hawt0010/Projects/ROOT/training/Medellin_data_ROOT_training/Training_Data/Tables/1_ipm_table.csv',
         u'number_of_frontier_points': 20.0,
         u'objectives_table_path': u'/Users/hawt0010/Projects/ROOT/training/Medellin_data_ROOT_training/Training_Data/Tables/4_objectives_table.csv',
         u'optimization_container': False,
@@ -26,4 +26,4 @@ args = {
 }
 
 if __name__ == '__main__':
-    root.execute(args)
+    rootcore.execute(args)

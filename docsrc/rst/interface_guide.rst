@@ -57,6 +57,7 @@ The preprocessing step prepares the spatial inputs (spatial decision unit map, r
             activity2, filepath, filepath, "..."
 
         The upper-left value should be :attr:`activity`, but the other entries should be replaced with corresponding activity names, factor names, or the correct filepath.
+    - *Requirements*: Note that if your analysis is using the absolute value approach, you should include an activity called "baseline" (no capitalization), which provides the background value for each factor if no other activity is implemented. If you are using the marginal value approach, do *not* include a "baseline" activity.
 
 
 * **Spatial weighting maps table**: This table points to shapefiles that specify weighting factors.
@@ -102,7 +103,7 @@ Absolute vs marginal values
 
 ROOT offers two modes for evaluation, the first assuming that the impact potential rasters represent "marginal values", meaning the change from the baseline state. The second assuming that they represent "absolute values", meaning they represent the state after the change. In the latter case, ROOT also requires information about the baseline in order to account for the relative changes. In order to do this, there are several specific changes required:
 
-* Provide an activity called `baseline`, accompanied by an activity mask that identifies the whole area as valid. 
+* Provide an activity called "baseline". This activity does not need an activity mask. If you wish to constrain which pixels are aggregated, either provide an area-of-interest shapefile or pre-mask the rasters with other GIS software.
 * Provide all impact potential rasters as absolute values.
 * ROOT will assess the total values in a given SDU under a certain activity choice by combining the values from the corresponding baseline and activity impact potential rasters - it will assign the activity-specific values to pixels identifed as valid by the corresponding activity mask, and will assign the baseline values to all other pixels. In this way, it captures the change on the relevant pixels and the remaining baseline value on other pixels.
 
