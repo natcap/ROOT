@@ -1,7 +1,7 @@
 Introduction
 ============
 
-Many conservation and resource management problems involve decisions about where on the landscape to undertake different actions: protection, restoration, different types of management, etc... These decisions are guided by a variety of objectives and priorities affecting diverse groups of people. In most decisions there are both tradeoffs to consider, as well as the potential to take advantage of co-benefits to improve the overall benefits provided by a set of actions. ROOT is a software tool that provides a way to approach challenging decision problems like these by utilizing an optimization approach to identify a range of management choice portfolios that maximize benefits subject to decision-specific constraints.
+Many conservation and resource management problems involve decisions about where on the landscape to undertake different actions: protection, restoration, different types of management, etc... These decisions are guided by a variety of objectives and priorities affecting diverse groups of people. In most decisions there are both tradeoffs to consider, as well as the potential to take advantage of co-benefits to improve the overall outcome of a set of actions. ROOT is a software tool that provides a way to approach challenging decision problems like these by utilizing an optimization approach to identify a range of management choice portfolios that maximize benefits subject to decision-specific constraints.
 
 Getting ROOT and sample data
 ----------------------------

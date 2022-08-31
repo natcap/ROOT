@@ -12,7 +12,7 @@ Base case: Restoration to improve ecosystem services
 The decision context
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In this section, we introduce an analysis to inform development of a plan to restore 10,000 ha of forest within a given region. The goals for the plan are to improve biodiversity, carbon storage, and water quality, but without specific targets for any objective. Eligible sites have been identified based on some criteria (marginal and/or degraded cropland, for example). The ROOT analysis will help identify optimal allocations of the 10,000 ha that maximize benefits to each of the target services across a range of different combinations so that stakeholders can make an informed choice about which plan to pursue. 
+In this section, we discuss an analysis intended to inform development of a plan to restore 10,000 ha of forest within a given region. The goals for the plan are to improve biodiversity, carbon storage, and water quality, but without specific targets for any objective. Eligible sites have been identified based on some criteria (marginal and/or degraded cropland, for example). The ROOT analysis will help identify optimal allocations of the 10,000 ha that maximize benefits to each of the target services across a range of different combinations so that stakeholders can make an informed choice about which plan to pursue. 
 
     .. note::
 
@@ -23,7 +23,7 @@ Input data
 
 To set up this analysis, we need the following data:
 
-*   Map of potential restoration sites: This raster indicates which pixels are eligible candidates for restoration. For this example, we have selected all cropland pixels below the 25th percentile in terms of crop value. Details about these rasters are :ref:`in the guide here<ig-amt>`.
+*   Map of potential restoration sites: This raster indicates which pixels are eligible candidates for restoration. For this example, we have selected all cropland pixels below the 25th percentile in terms of crop value. Details about preparing these "activity mask rasters" are :ref:`in the guide here<ig-amt>`.
 
 .. figure:: _static/images/crop_pixels.png
     :align: center
@@ -32,7 +32,9 @@ To set up this analysis, we need the following data:
 
     Map showing distribution of lower-value cropland considered for restoration in this example.
 
-*	Potential values maps: These rasters indicate the per-pixel value for each outcome of concern under each of the different management scenarios, in this case baseline (current management) and restoration. For this example, we include improvement in a biodiversity index, change in carbon storage, and reduction in nitrate loading to drinking water. **Important:** Note that in this example, these rasters indicate the *absolute* value in each scenario. An alternative way to use ROOT is to provide rasters that indicate the *benefit* of restoration, meaning the difference from  current conditions after the change is made. In that case, no baseline values need to be provided. These options are further :ref:`described in the guide<ig-abs-vs-marg>`.
+*	Potential values maps: These rasters indicate the per-pixel value for each outcome of concern under each of the different management scenarios, in this case baseline (current management) and restoration. For this example, we include improvement in a biodiversity index, change in carbon storage, and reduction in nitrate loading to drinking water. This requires six different rasters: one for each outcome for current and restored land uses.
+
+**Important:** Note that in this example, these rasters indicate the *absolute* value in each scenario. An alternative way to use ROOT is to provide rasters that indicate the *benefit* of restoration, meaning the difference from  current conditions after the change is made. In that case, no baseline values need to be provided. These options are further :ref:`described in the guide<ig-abs-vs-marg>`.
 
 .. figure:: _static/images/colombia_carbon.png
     :align: center
@@ -40,9 +42,9 @@ To set up this analysis, we need the following data:
 
     Panels show carbon storage in a) current landscape, b) restored landscape, and c) the gain in carbon storage with restoration (difference map).
 
-**Note**: When preparing this data for ROOT, it is important that the rasters be provided with identical extent, projection, and pixel size. Additionally, there is a particular format for the csv tables used to tell ROOT which raster to use for which data value. These details are discussed in the :ref:`interface guide<ig-preprocessing>`.
+**Note**: When preparing this data for ROOT, it is important that all rasters be provided with identical extent, projection, and pixel size. Additionally, there is a particular format for the csv tables used to tell ROOT which raster to use for which data value. These details are discussed in the :ref:`interface guide<ig-preprocessing>`.
 
-Within ROOT, one key user-defined parameter is the “spatial decision unit” (SDU, :ref:`see guide<ig-sdu>`). This is the spatial unit for which ROOT turns each of the potential activities (in this case restoration) on or off. Due to computational limitations, it is generally not practical to have SDUs correspond with pixels. Depending on pixel size, this might also correspond with reasonable project limitations – for example it might not make sense to identify 30m^2 areas for restoration if there is a fixed per-project cost. Here we will set the SDUs to be 25 ha, but it is worth considering this choice carefully for any given application. Note that ROOT also allows the user to provide an explicit map (via a shapefile) of desired SDUs, giving a great deal of flexibility to how SDUs are structured. 
+Within ROOT, one key user-defined parameter is the “spatial decision unit” (SDU, :ref:`see guide<ig-sdu>`). This is the spatial unit for which ROOT turns each of the potential activities (in this case restoration) on or off. Due to computational limitations, it is generally not practical to have SDUs correspond with pixels. Depending on pixel size, this might also correspond with reasonable project limitations - for example it might not make sense to identify 30m^2 areas for restoration if there is a fixed per-project cost. Here we will set the SDUs to be 25 ha, but it is worth considering this choice carefully for any given application. Note that ROOT also allows the user to provide an explicit map (via a shapefile) of desired SDUs, giving a great deal of flexibility to how SDUs are structured. 
 
 .. figure:: _static/images/colombia_sdus.png
     :align: center
@@ -50,12 +52,12 @@ Within ROOT, one key user-defined parameter is the “spatial decision unit” (
 
     Example of hexagonal SDUs generated by ROOT preprocessing for this example.
 
-With this data provided, we can run ROOT’s preprocessing step, which calculates per-SDU totals for each of the provided potential impact rasters. This step automates masking the impact rasters according to the activity and area-of-interest masks and performing the zonal stats needed to sum the impact per SDU polygon. The results are saved to tables of values used by the optimization step, as well as to a shapefile output that can be used for user analysis or visualization.
+With this data provided, we can run ROOT's preprocessing step, which calculates per-SDU totals for each of the provided potential impact rasters. This step automates masking the impact rasters according to the activity and area-of-interest masks and performing the zonal stats needed to sum the impact per SDU polygon. The results are saved to tables of values used by the optimization step, as well as to a shapefile output that can be used for user analysis or visualization.
 
 Optimization parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Finally, we need to specify the kind of optimization analysis to run. Within a ROOT optimization problem, there are three elements to consider: what are the choices available? What are the objectives or goals of the decision? And what are the constraints or targets? We have discussed the first of these already – the various activities available in each SDU are the choices. More specifically, the choices are to do or not do a given activity in each of the various SDUs. 
+Finally, we need to specify the kind of optimization analysis to run. Within a ROOT optimization problem, there are three elements to consider: what are the choices available? What are the objectives or goals of the decision? And what are the constraints or targets? We have discussed the first of these already - the various activities available in each SDU are the choices. More specifically, the choices are to do or not do a given activity in each of the various SDUs. 
 
 The :ref:`objectives<ig-objectives-table>` define the values that we aim to maximize or minimize with different allocations of the various activities. In our current example the objectives are:
 
@@ -65,7 +67,7 @@ The :ref:`objectives<ig-objectives-table>` define the values that we aim to maxi
 
 In this example, each of these has been calculated so that a larger value represents a bigger benefit, although ROOT can handle objectives where a smaller value is preferable as well (e.g. total nitrate rather than reduction of nitrate, or cost). When identifying each objective, the user must indicate whether to maximize or minimize it.
 
-Constraints (targets) are rules that determine which allocations of the activities are valid. Some familiar constraints might be a total budget that can’t be exceeded, or a critical area of habitat that needs to be protected. In ROOT, constraints can be set on multiple elements at a time, allowing for some relatively complex problem formulations to be addressed. In this example, we will set a constraint on the total area to restore.
+Constraints (targets) are rules that determine which allocations of the activities are valid. Some familiar constraints might be a total budget that can't be exceeded, or a critical area of habitat that needs to be protected. In ROOT, constraints can be set on multiple elements at a time, allowing for some relatively complex problem formulations to be addressed. In this example, we will set a constraint on the total area to restore.
 
 Note that it is possible to treat some value either as an objective or constraint (or both). For example, the user could set a budget constraint and examine the range of possible environmental benefits in one analysis, while in another set a fixed environmental goal and solve for the least-cost solution. In the optimization literature, these two approaches are called “dual problems” of each other.  
 
@@ -82,7 +84,7 @@ When it runs, the optimizer packaged with ROOT will solve a sequence of optimiza
     :align: center
     :alt: optimization outputs showing frontiers for biodiversity, carbon, and water quality vs crop production value
 
-    Optimization outputs showing frontiers for biodiversity, carbon, and water quality vs crop production value.
+    Optimization outputs showing frontiers for biodiversity, carbon, and water quality vs crop production value. Each dot represents the value of one optimization solution.
 
 The output from the analysis is this set of specific solutions as well as an “agreement map” which identifies how often a particular SDU was selected for restoration among all solutions. SDUs that score highly in the agreement map are ones that are generally good choices regardless of the final preference between maximizing biodiversity, carbon, or water quality.
 
@@ -118,7 +120,7 @@ NOTE: currently ROOT does not provide a method to apply spatial weighting via ra
 Absolute vs marginal values
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In the example above, we highlighted how the impact rasters are measured in terms of the change from the current state (i.e., the “marginal value”). In this case, it is assumed that the value of no action is zero. However, if the user provides baseline, or current, values for each of the objectives, then the benefit/impact rasters can also be provided in terms of absolute values. The advantages of doing this are that the output is already in absolute terms and will not require any additional calculations to translate from change to absolute. The drawbacks are some additional complexities configuring ROOT.  
+In the example above, we used rasters that indicated the state of each objective under each of the potential landscape managements (baseline, restoration, etc...). This is the "absolute value" approach to a ROOT analsis. In other cases, it might make more sense to thing about the additional value that would be produced under some given change, also known as the "marginal value" of that change. In order to use ROOT in this way, simply omit the baseline scenario and provide value rasters measured in terms of the change from baseline to the alternative management.
 
 Examples of optimization configurations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -129,15 +131,12 @@ Here we provide some examples of objective and constraints that can be applied t
 *	Set the objective to minimize cost and set target (minimum) values for the environmental objectives. In this case, just run a single optimization to find the least-cost activity allocation that meets the environmental targets.
 *	Consider including competing objectives. For example, by including crop production as an objective and also trying to maximize it, we can identify locations that provide the greatest environmental benefit relative to the lost agricultural production.
 
-Complex examples
---------------------------------------
-
 Spatial distributions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Let’s consider a case where we have target restoration areas, A_i, for several different regions, but we want to optimize them simultaneously. Here are two ways to do that in ROOT:
+Let's consider a case where we have target restoration areas, :math:`A_i`, for several different regions, but we want to optimize them simultaneously. Here are two ways to do that in ROOT:
 
-*	Define restoration in each region as its own activity and provide distinct activity masks for each region. Then set constraints on the area in each region. “region_name_ha” == A_i. 
+*	Define restoration in each region as its own activity and provide distinct activity masks for each region. Then set constraints on the area in each region such as “region_name_ha” :math:`= A_i`. 
 *	Define spatial weighting masks for each region and create composite factors that combine the spatial extent and activity area to create a new variable. Set constraints on those new variables.
 
 These approaches are identical from the perspective of the optimization tool, but hopefully give you some ideas of how to approach similar problems. 

@@ -5,16 +5,14 @@ Release Notes
 1.2 (Aug 2022)
 --------------
 Introduces new features:
-* **Absolute value analysis**: Instead of requiring "marginal values" for the optimization, ROOT
-will now function with "absolute values" with the inclusion of a baseline scenario.
-* **Area of interest**: A new option to provide an area of interest map has been added. This allows
-the user to use a shapefile as an additional boundary to determine the area to analyze.
-* **Advanced options**: Some new advanced options are now accessible by providing a json-formatted
-options file.
+
+* **Absolute value analysis**: Instead of requiring "marginal values" for the optimization, ROOT will now function with "absolute values" with the inclusion of a baseline scenario.
+* **Area of interest**: A new option to provide an area of interest map has been added. This allows the user to use a shapefile as an additional boundary to determine the area to analyze.
+* **Advanced options**: Some new advanced options are now accessible by providing a json-formatted options file.
 
 Internal improvements:
-* **Preprocessing refactoring**: Various changes were made to the ROOT preprocessing steps to 
-improve the analysis. 
+
+* **Preprocessing refactoring**: Various changes were made to the ROOT preprocessing steps to  improve the analysis and facilitate future development
 
 
 1.1 (July 2018)
