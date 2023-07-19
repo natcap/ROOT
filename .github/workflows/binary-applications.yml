@@ -3,6 +3,7 @@ name: ROOT Binaries, Tests
 on:
     push:
     pull_request:
+    workflow_dispatch:
 
 concurrency:
   # make sure only one run of this workflow for a given PR or a given branch
