@@ -57,9 +57,10 @@ jobs:
               run: git fetch origin +refs/tags/*:refs/tags/*
 
             - name: Setup mamba environment
-              uses: mamba-org/provision-with-micromamba@main
+              uses: mamba-org/setup-micromamba@v1
               with:
-                  activate-environment: root-env
+                  environment-name: root-env
+                  environment-file: environment.yml
                   python-version: ${{ env.PYTHON_VERSION }}
 
             - name: Install packages
@@ -67,8 +68,8 @@ jobs:
               run: |
                   # Avoid poppler issue by setting channel priority.
                   # https://github.com/conda-forge/gdal-feedstock/issues/605#issuecomment-1047858220
-                  conda config --set channel_priority strict
-                  conda env update --file environment.yml
+                  mamba config --set channel_priority strict
+                  mamba env update --file environment.yml
 
             - name: Install extra packages on Windows
               if: ${{ runner.os == 'Windows' }}
@@ -119,16 +120,16 @@ jobs:
             - name: Fetch git tags
               run: git fetch origin +refs/tags/*:refs/tags/*
 
-            - name: Setup conda environment
-              uses: conda-incubator/setup-miniconda@v2.1.1
+            - name: Setup mamba environment
+              uses: mamba-org/setup-micromamba@v1
               with:
-                  activate-environment: root-env
-                  auto-update-conda: true
+                  environment-name: root-env
+                  environment-file: environment.yml
                   python-version: ${{ env.PYTHON_VERSION }}
 
             - name: Install packages
               shell: bash -l {0}
-              run: conda env update --file environment.yml
+              run: mamba env update --file environment.yml
 
             - name: Run tests
               shell: bash -l {0}
