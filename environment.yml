@@ -27,5 +27,5 @@ dependencies:
     - pip
     - pip:
         # UI requirements work more reliably when installed via pip.
-        - natcap.invest[ui]>=3.11
+        - natcap.invest[ui]>=3.11,<3.13
         - railroad  # Needed for setuptools._vendor.pyparsing.diagram
