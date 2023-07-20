@@ -64,6 +64,7 @@ jobs:
               shell: powershell
               run: |
                   choco install vcredist140
+                  Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
                   refreshenv
 
             - name: Build binaries
