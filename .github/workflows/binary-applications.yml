@@ -45,9 +45,6 @@ jobs:
             fail-fast: false
             matrix:
                 os: [windows-latest, macos-latest]
-        env:
-            PYTHON_VERSION: "3.10"
-            PYTHON_ARCH: x64
         steps:
             - uses: actions/checkout@v2
               with:
@@ -61,15 +58,6 @@ jobs:
               with:
                   environment-name: root-env
                   environment-file: environment.yml
-                  python-version: ${{ env.PYTHON_VERSION }}
-
-            - name: Install packages
-              shell: bash -l {0}
-              run: |
-                  # Avoid poppler issue by setting channel priority.
-                  # https://github.com/conda-forge/gdal-feedstock/issues/605#issuecomment-1047858220
-                  mamba config --set channel_priority strict
-                  mamba env update --file environment.yml
 
             - name: Install extra packages on Windows
               if: ${{ runner.os == 'Windows' }}
@@ -80,7 +68,7 @@ jobs:
 
             - name: Build binaries
               timeout-minutes: 20  # Encountered some probably-infinite loops around the 10 minute mark.
-              shell: bash -l {0}
+              shell: bash -el {0}
               run: |
                   pip install "scipy>=1.5.0"  # scipy~=1.4 has an import issue with _ufuncs.
                   pip install --no-deps .  # Install root as a wheel
@@ -125,14 +113,9 @@ jobs:
               with:
                   environment-name: root-env
                   environment-file: environment.yml
-                  python-version: ${{ env.PYTHON_VERSION }}
-
-            - name: Install packages
-              shell: bash -l {0}
-              run: mamba env update --file environment.yml
 
             - name: Run tests
-              shell: bash -l {0}
+              shell: bash -el {0}
               run: |
                   pip install pytest
                   pip install --no-deps .  # Install root as a wheel
