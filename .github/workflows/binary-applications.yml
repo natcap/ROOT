@@ -56,11 +56,10 @@ jobs:
             - name: Fetch git tags
               run: git fetch origin +refs/tags/*:refs/tags/*
 
-            - name: Setup conda environment
-              uses: conda-incubator/setup-miniconda@v2.1.1
+            - name: Setup mamba environment
+              uses: mamba-org/provision-with-micromamba@main
               with:
                   activate-environment: root-env
-                  auto-update-conda: true
                   python-version: ${{ env.PYTHON_VERSION }}
 
             - name: Install packages
