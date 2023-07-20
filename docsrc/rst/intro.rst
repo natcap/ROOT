@@ -8,8 +8,8 @@ Getting ROOT and sample data
 
 The latest version of ROOT can be downloaded from these links:
 
-    * Windows build: https://github.com/natcap/ROOT/suites/8030574189/artifacts/345104819
-    * Mac build: https://github.com/natcap/ROOT/suites/8030574189/artifacts/345104818
+    * Windows build: https://storage.googleapis.com/root-files/root-0.0.post194%2Bgbfc5cd5-Windows-x64.zip
+    * Mac build: https://storage.googleapis.com/root-files/root-0.0.post194%2Bgbfc5cd5-Darwin-x64.zip
 
 Sample data to accompany the examples in this guide can be downloaded from:
 
