@@ -6,10 +6,7 @@ Many conservation and resource management problems involve decisions about where
 Getting ROOT and sample data
 ----------------------------
 
-The latest version of ROOT can be downloaded from these links:
-
-    * Windows build: https://storage.googleapis.com/root-files/root-0.0.post194%2Bgbfc5cd5-Windows-x64.zip
-    * Mac build: https://storage.googleapis.com/root-files/root-0.0.post194%2Bgbfc5cd5-Darwin-x64.zip
+The latest version of ROOT can be downloaded from the github release page: https://github.com/natcap/ROOT/releases
 
 Sample data to accompany the examples in this guide can be downloaded from:
 

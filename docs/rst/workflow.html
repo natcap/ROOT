@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>3. ROOT Workflow &mdash; ROOT 1.0 documentation</title>
@@ -101,7 +101,7 @@
 <p>This section describes the steps in the ROOT analysis. Running ROOT requires a fair amount of up-front work assembling spatial data to use as inputs to the optimization. Once that data is in place, the pre-processing step in ROOT translates the input data from raster and shapefile formats to a table-based format for the optimization. An analysis will then typically involve a number of different optimization steps based on the same pre-processed data to compare use of different objectives, weights, and constraint values.</p>
 <section id="key-terms">
 <h2><span class="section-number">3.1. </span>Key terms<a class="headerlink" href="#key-terms" title="Permalink to this heading"></a></h2>
-<dl class="glossary simple">
+<dl class="simple glossary">
 <dt id="term-Activity">Activity<a class="headerlink" href="#term-Activity" title="Permalink to this term"></a></dt><dd><p>ROOT is used to inform spatial decisions about where to undertake different management actions or changes. We use the term “activity” to refer generally to any action, investment, or decision that needs to be spatially allocated. The result of a single optimization from ROOT will be a table indicating which activities, if any, to assign to each spatial decision unit. Some of these activities may not require any physical action (e.g. allocation of protection to natural areas).</p>
 </dd>
 <dt id="term-Factor">Factor<a class="headerlink" href="#term-Factor" title="Permalink to this term"></a></dt><dd><p>The analyses that ROOT performs are based on characteristics of each spatial decision unit and activity that determine whether an activity allocation is good for the specified objectives, or obeys rules (constraints) that the decision is subject to. We refer generally to any of these characteristics as a ‘factor’. Specifically, factors show up as the columns in the tables output from the preprocessing steps, and are calculated from the raster and shape inputs.</p>
