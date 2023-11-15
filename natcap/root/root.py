@@ -1,29 +1,29 @@
 """ROOT InVEST Model."""
 
+import csv
+import logging
+import multiprocessing
 import os
 import sys
-import logging
-import csv
-import multiprocessing
 from math import sqrt
 
 import pandas as pd
-from osgeo import ogr
-from osgeo import gdal
+import pygeoprocessing
 import PySide2  # pragma: no cover
-from qtpy import QtWidgets
-from qtpy import QtGui
-from natcap.invest.ui import model, inputs
 from natcap.invest import spec_utils
 from natcap.invest import validation
-import pygeoprocessing
-
+from natcap.invest.ui import inputs
+from natcap.invest.ui import model
 from natcap.root import __version__
-from natcap.root import rootcore
-from natcap.root import preprocessing
-from natcap.root import postprocessing
-from natcap.root import optimization
 from natcap.root import arith_parser as ap
+from natcap.root import optimization
+from natcap.root import postprocessing
+from natcap.root import preprocessing
+from natcap.root import rootcore
+from osgeo import gdal
+from osgeo import ogr
+from qtpy import QtGui
+from qtpy import QtWidgets
 
 LOGGER = logging.getLogger(__name__)
 
@@ -171,10 +171,15 @@ ARGS_SPEC = {
                 "frontier.</li><li>n_dim_outline: constructs 2D "
                 "frontiers for all pairs of objectives.</li></ul>"),
             'name': 'Analysis Type',
-            'validation_options': {
-                'options': ["weight_table", "frontier", "n_dim_frontier",
-                            "n_dim_outline"],
-            }
+            'options': {
+                "weight_table": {"display_name": "Weight Table"},
+                "frontier": {"display_name": "Frontier"},
+                "n_dim_frontier": {
+                    "display_name": "Sample N Dimensional Points on Frontier"},
+                "n_dim_outline": {
+                    "display_name": (
+                        "Construct frontiers for all pairs of objectives")},
+            },
         },
         'number_of_frontier_points': {
             'type': 'number',
@@ -296,8 +301,18 @@ def _create_input_kwargs_from_args_spec(args_key, validate=True):
         'label': model_spec[args_key]['name'],
     }
 
-    if validate:
+    arg_type = model_spec[args_key]['type']
+
+    if validate and arg_type != 'option_string':
         kwargs['validator'] = validate
+
+    if arg_type == 'option_string':
+        spec_options = model_spec[args_key]['options']
+        kwargs['options'] = [
+            value['display_name'] for value in spec_options.values()]
+        kwargs['return_value_map'] = {
+            value['display_name']: key for (key, value) in
+            spec_options.items()}
 
     return kwargs
 
@@ -379,7 +394,7 @@ class Root(model.InVESTModel):
             **_create_input_kwargs_from_args_spec('optimization_suffix'))
         self.optimization_container.add_input(self.optimization_suffix)
 
-        self.frontier_type = inputs.Text(
+        self.frontier_type = inputs.Dropdown(
             **_create_input_kwargs_from_args_spec('frontier_type'))
         self.optimization_container.add_input(self.frontier_type)
 
@@ -425,7 +440,7 @@ class Root(model.InVESTModel):
         return args
 
 
-if __name__ == '__main__':
+def main():
     multiprocessing.freeze_support()
 
     if '--test-imports' in sys.argv:
@@ -448,3 +463,7 @@ if __name__ == '__main__':
     LOGGER.info('Entering event loop.')
     _ = APP.exec_()
     LOGGER.info('Exiting.')
+
+
+if __name__ == '__main__':
+    main()
