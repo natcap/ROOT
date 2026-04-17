@@ -6,7 +6,11 @@ Many conservation and resource management problems involve decisions about where
 Getting ROOT and sample data
 ----------------------------
 
-The latest version of ROOT can be downloaded from the github release page: https://github.com/natcap/ROOT/releases
+ROOT is available as a plugin for the InVEST Workbench. To install ROOT, first install the
+workbench, which is available here: https://naturalcapitalalliance.stanford.edu/software/invest.
+Then, add ROOT as a plugin. This is currently done from the Manage Plugins menu by supplying the git
+repository link (https://github.com/natcap/ROOT). When the InVEST plugin repository launches, the
+easiest way to install will be through the repository menu.
 
 Sample data to accompany the examples in this guide can be downloaded from:
 

@@ -2,6 +2,16 @@ Release Notes
 =============
 
 
+1.3 (Apr 2026)
+--------------
+Switch from stand-alone executable to InVEST Workbench plugin. 
+
+ROOT will now be available as an installable plugin in the InVEST Workbench
+(https://naturalcapitalalliance.stanford.edu/software/invest). The stand-alone files for previous
+versions will be available, but any future updates to the software will be distributed through the
+workbench version.
+
+
 1.2 (Aug 2022)
 --------------
 Introduces new features:
