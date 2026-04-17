@@ -4,7 +4,7 @@ import json
 import copy
 import pprint
 
-from natcap.root import optim_core as opco
+from . import optim_core as opco
 
 
 def execute(config_file_or_dict):

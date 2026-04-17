@@ -12,11 +12,11 @@ from osgeo import ogr
 from osgeo import gdal
 import pygeoprocessing
 
-from natcap.root import __version__
-from natcap.root import preprocessing
-from natcap.root import postprocessing
-from natcap.root import optimization
-from natcap.root import arith_parser as ap
+# from . import __version__
+from . import preprocessing
+from . import postprocessing
+from . import optimization
+from . import arith_parser as ap
 
 LOGGER = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ def execute(args):
     """root.
 
     """
-    LOGGER.info(f'Running ROOT version {__version__}')
+    # LOGGER.info(f'Running ROOT version {__version__}')
     internal_args = parse_args(args)
 
     # with open(os.path.join(internal_args['workspace'], 'root_args.json'), 'w') as root_args_file:
