@@ -133,11 +133,14 @@ def parse_args(ui_args):
             root_args['combined_factors'] = None
         
         # check for optional arguments
-        root_args['aoi_file_path'] = ui_args['aoi_file_path'] if os.path.isfile(
-            ui_args['aoi_file_path']) else None
-        root_args['advanced_args_json_path'] = ui_args['advanced_args_json_path'] if os.path.isfile(
-            ui_args['advanced_args_json_path']) else None
-
+        if ui_args["aoi_file_path"] is None or not os.path.isfile(ui_args['aoi_file_path']):
+            root_args["aoi_file_path"] = None
+        else:
+            root_args["aoi_file_path"] = ui_args["aoi_file_path"]
+        if ui_args["advanced_args_json_path"] is None or not os.path.isfile(ui_args['advanced_args_json_path']):
+            root_args["advanced_args_json_path"] = None
+        else:
+            root_args["advanced_args_json_path"] = ui_args["advanced_args_json_path"]
 
     if ui_args['do_optimization']:
 

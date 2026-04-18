@@ -5,7 +5,7 @@ MODEL_SPEC = spec.ModelSpec(
     model_id="root_plugin",
     model_title="ROOT",
     userguide="https://natcap.github.io/ROOT/",
-    module_name=__name__,
+    module_name="invest_root_plugin",
     input_field_order=[
         [
             "workspace_dir", "results_suffix",
@@ -170,5 +170,4 @@ MODEL_SPEC = spec.ModelSpec(
         )
     ],
     # reporter='invest_root_plugin.reporter'
-
 )
