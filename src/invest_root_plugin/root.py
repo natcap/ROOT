@@ -3,6 +3,7 @@
 import os
 import sys
 import logging
+import json
 import csv
 import multiprocessing
 from math import sqrt
@@ -36,6 +37,7 @@ def execute(args):
 
     """
     # LOGGER.info(f'Running ROOT version {__version__}')
+    args, file_registry, task_graph = MODEL_SPEC.setup(args)
     internal_args = rootcore.parse_args(args)
 
     # with open(os.path.join(internal_args['workspace'], 'root_args.json'), 'w') as root_args_file:
@@ -54,6 +56,9 @@ def execute(args):
     else:
         print('skipping optimization')
 
+
+    # return {"sdu_grid_raster": "/Users/hawthornespatial/Projects/ROOT/sample_data/workspace/sdu_grid.tif"}
+    return file_registry.registry
 
 
 

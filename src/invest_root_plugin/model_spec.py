@@ -26,6 +26,7 @@ MODEL_SPEC = spec.ModelSpec(
     inputs=[
         spec.WORKSPACE,
         spec.SUFFIX,
+        spec.N_WORKERS,
         spec.BooleanInput(
             id="do_preprocessing",
             name="Do Preprocessing",
@@ -162,12 +163,22 @@ MODEL_SPEC = spec.ModelSpec(
     ],
     # All output paths are relative to the workspace dir
     outputs=[
-        spec.FileOutput(
-            id="agreement_map",
-            about="Shows the number of times each SDU was selected.",
-            created_if="do_optimization",
-            path="optimization_results_[OPTIMIZATION_SUFFIX]/agreement_map.shp"
-        )
+        spec.SingleBandRasterOutput(
+            id="sdu_grid_raster",
+            about="rasterized version of sdu_grid shapefile with SDU_ID as value",
+            created_if="do_preprocessing",
+            path="sdu_grid.tif",
+            data_type=int,
+            units=None
+        ),
+        spec.TASKGRAPH_CACHE
+
+        # spec.FileOutput(
+        #     id="agreement_map_[]",
+        #     about="Shows the number of times each SDU was selected.",
+        #     created_if="do_optimization",
+        #     path="optimization_results_[OPTIMIZATION_SUFFIX]/agreement_map.shp"
+        # )
     ],
     # reporter='invest_root_plugin.reporter'
 )
