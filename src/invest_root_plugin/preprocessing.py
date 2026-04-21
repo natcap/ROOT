@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 
 import pygeoprocessing
-from natcap.root import arith_parser as ap
+from . import arith_parser as ap
 
 
 class RootPreprocessingError(Exception):
@@ -106,6 +106,8 @@ def execute(args):
         'aoi_file_path': args['aoi_file_path'],
         }
     for path in f_reg.values():
+        if path is None:
+            continue
         dir_path = os.path.dirname(path)
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
@@ -737,7 +739,7 @@ def _create_value_tables_for_activity(
     columns.extend([f"{activity}_ha" for activity in activity_list])
     columns.extend(value_ids)
     for col in columns:
-        df[col] = 0
+        df[col] = 0.0
     
     # PREP THE RASTERS TO READ
     value_rasters = [
