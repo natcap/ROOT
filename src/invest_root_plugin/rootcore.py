@@ -54,7 +54,7 @@ def parse_args(ui_args):
     Takes args from root.py InVEST UI, converts to the args expected by
     the optimization engine.
 
-    Parses tables, also.
+    Parses and validates tables.
 
     :param ui_args:
     :return:
@@ -68,7 +68,9 @@ def parse_args(ui_args):
     root_args['baseline_file'] = 'baseline.csv'
     root_args['sdu_id_col'] = 'SDU_ID'
 
-    raster_table = None  # will be overwritten in "do_preprocessing" step but stay None if that is skipped
+    # will be overwritten in "do_preprocessing" step but stay empty if that is skipped
+    raster_table = None
+    root_args["combined_factors"] = {}
 
     if ui_args['do_preprocessing']:
 
@@ -145,9 +147,9 @@ def parse_args(ui_args):
     if ui_args['do_optimization']:
 
         validate_objectives_and_constraints_tables(
+            ui_args['workspace_dir'],
             ui_args['objectives_table_path'],
             ui_args['targets_table_path'],
-            ui_args['workspace_dir'],
             raster_table,
             root_args["combined_factors"]
         )
@@ -261,16 +263,19 @@ def _process_raster_table(filename):
     return RasterTable(filename)
 
 
-def _process_objectives_table(ui_args, root_args):
+def _process_objectives_table(ui_args, root_args) -> str | dict[str, float]:
     """
     There are two distinct cases based on the analysis type:
     weight_table: for this analysis, we just pass the filename on as the weights
     others: these will have provided a table with mins/maxs that we parse
         return a dict {factorname: +/- 1.0, ...}
 
-    :param ui_args:
-    :param root_args:
-    :return:
+    Args:
+        ui_args
+        root_args
+
+    Returns:
+        optimization_objectives    
     """
 
     if root_args['analysis_type'] == 'weight_table':
@@ -491,7 +496,7 @@ def validate_cft_table(rt_path, st_path, cft_path):
         raise RootInputError(msg)
 
 
-def validate_objectives_and_constraints_tables(obj_table_file, cons_table_file, workspace, raster_table, combined_factors):
+def validate_objectives_and_constraints_tables(workspace, obj_table_file, cons_table_file, raster_table, combined_factors):
 
     if raster_table is not None:
         # the case where we ran the preprocessing step

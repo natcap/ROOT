@@ -158,7 +158,7 @@ def get_header_list(filename, delimiter=','):
     :param delimiter:
     :return:
     """
-    with open(filename, 'rU') as f:
+    with open(filename, 'r') as f:
         header_str = f.readline().strip()
         header_list = header_str.split(delimiter)
     return header_list
