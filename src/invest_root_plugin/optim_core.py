@@ -21,7 +21,7 @@ import cvxpy as cvx
 import pandas as pd
 import numpy as np
 
-from natcap.root import arith_parser as ap
+from . import arith_parser as ap
 
 
 """
