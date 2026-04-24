@@ -7,14 +7,15 @@ name = "invest_root_plugin"
 # Allow setuptools_scm to derive the version dynamically from the git metadata
 # Using setuptools_scm is not required, but we highly recommend it
 dynamic = ["version"]
-description = "ROOT is a landscape optimization tool."
+description = "ROOT is a landscape optimization tool that helps users identify action portfolios and balance multiple benefits."
 license = "Apache-2.0"
 readme = "README.md"
 authors = [
-  { name = "Peter Hawthorne", email = "peter.hawthorne@natcapinsights.com" },
+  {name = "Peter Hawthorne"},
 ]
 maintainers = [ 
-  { name = "Peter Hawthorne", email = "peter.hawthorne@natcapinsights.com" },
+  {name = "Peter Hawthorne"},
+  {name = "Natural Capital Alliance Software Team"}
 ]
 keywords = ["landscape planning", "optimization"]
 
