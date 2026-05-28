@@ -7,7 +7,7 @@ name = "invest_root_plugin"
 # Allow setuptools_scm to derive the version dynamically from the git metadata
 # Using setuptools_scm is not required, but we highly recommend it
 dynamic = ["version"]
-description = "ROOT is a landscape optimization tool that helps users identify action portfolios and balance multiple benefits."
+description = "ROOT is a landscape optimization tool that helps users identify action portfolios that balance multiple benefits."
 license = "Apache-2.0"
 readme = "README.md"
 authors = [
@@ -30,6 +30,7 @@ dependencies = [
 [project.urls]
 Homepage = "https://natcap.github.io/ROOT/"
 Repository = "https://github.com/natcap/ROOT"
+Issues = "https://github.com/natcap/ROOT/issues"
 Documentation = "https://natcap.github.io/ROOT/"
 
 
