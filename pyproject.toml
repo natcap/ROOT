@@ -18,6 +18,7 @@ maintainers = [
   {name = "Natural Capital Alliance Software Team"}
 ]
 keywords = ["landscape planning", "optimization"]
+license-files = ["LICENSE"]
 
 # All direct python dependencies should be listed here. If a package is
 # available from conda-forge, it can also be listed under the conda_dependencies.
